@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.Project1" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Background Color-->
+        <item name="android:windowSplashScreenBackground">#1E293B</item>
+
+        <!-- Duration -->
+        <item name="windowSplashScreenAnimationDuration">1000</item>
+        <!-- Icon-->
+        <item name="android:windowSplashScreenAnimatedIcon" >@drawable/logo_white</item>
+
+        <item name="postSplashScreenTheme">@style/Theme.Project1</item>
+
+    </style>
+</resources>
