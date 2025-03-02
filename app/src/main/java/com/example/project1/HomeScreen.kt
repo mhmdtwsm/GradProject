@@ -11,14 +11,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun HomeScreen(userName: String = "User_1") {
+fun HomeScreen(userName: String = "User_1", navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -87,7 +90,7 @@ fun HomeScreen(userName: String = "User_1") {
         Spacer(modifier = Modifier.weight(1f))
 
         // Bottom Navigation
-        BottomNavigationBar()
+        BottomNavigationBar(navController)
     }
 }
 
@@ -129,10 +132,13 @@ fun NavButton(title: String, icon: Int, iconSize: Int = 70) {
 }
 
 @Composable
-fun BottomNavigationBar() {
+fun BottomNavigationBar(navController: NavController) {
     BottomNavigation(
         backgroundColor = Color(0xFF1C2431),
-        contentColor = Color.White
+        contentColor = Color.White,
+        modifier = Modifier
+            .padding(vertical = 5.dp)
+            .border(2.dp, Color.White, RoundedCornerShape(12.dp))
     ) {
         BottomNavigationItem(
             icon = {
@@ -146,6 +152,7 @@ fun BottomNavigationBar() {
             },
             label = { Text("Home") },
             selected = true,
+            modifier = Modifier.padding(vertical = 5.dp),
             onClick = {}
         )
         BottomNavigationItem(
@@ -160,6 +167,7 @@ fun BottomNavigationBar() {
             },
             label = { Text("URL") },
             selected = false,
+            modifier = Modifier.padding(vertical = 5.dp),
             onClick = {}
         )
         BottomNavigationItem(
@@ -173,6 +181,8 @@ fun BottomNavigationBar() {
             },
             label = { Text("SMS") },
             selected = false,
+            modifier = Modifier.padding(vertical = 5.dp),
+
             onClick = {}
         )
         BottomNavigationItem(
@@ -185,7 +195,11 @@ fun BottomNavigationBar() {
             },
             label = { Text("Tools") },
             selected = false,
-            onClick = {}
+            modifier = Modifier.padding(vertical = 5.dp),
+
+            onClick = {
+                navController.navigate(Screen.ToolsMenu.route)
+            }
         )
         BottomNavigationItem(
             icon = {
@@ -197,6 +211,8 @@ fun BottomNavigationBar() {
             },
             label = { Text("Setting") },
             selected = false,
+            modifier = Modifier.padding(vertical = 5.dp),
+
             onClick = {}
         )
     }
@@ -205,5 +221,5 @@ fun BottomNavigationBar() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewHomeScreen() {
-    HomeScreen()
+    HomeScreen(navController = rememberNavController())
 }

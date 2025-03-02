@@ -7,12 +7,16 @@ import androidx.navigation.compose.rememberNavController
 import com.example.project1.onboard.OnboardingScreen
 import com.example.project1.Register.LoginScreen
 import com.example.project1.Register.RegisterScreen
+import com.example.project1.tools.PasswordTest
+import com.example.project1.tools.ToolsMenu
 
 sealed class Screen(val route: String) {
     object Onboarding : Screen("onboarding")
     object Login : Screen("login")
     object Register : Screen("register")
     object Home : Screen("home")
+    object ToolsMenu : Screen("toolsMenu")
+    object PasswordTest : Screen("passwordTest")
 }
 
 @Composable
@@ -65,7 +69,15 @@ fun AppNavigation(startDestination: String = Screen.Onboarding.route) {
 
         // Home Screen
         composable(Screen.Home.route) {
-            HomeScreen(userName = "User_1")
+            HomeScreen(userName = "User_1", navController = navController)
+        }
+
+        composable(Screen.ToolsMenu.route) {
+            ToolsMenu(navController = navController)
+        }
+
+        composable(Screen.PasswordTest.route) {
+            PasswordTest()
         }
     }
 }
