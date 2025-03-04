@@ -17,10 +17,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.project1.R
+import com.example.project1.Screen
 
 @Composable
 fun Cards(onClick: () -> Unit) {
@@ -52,10 +57,17 @@ fun Cards(onClick: () -> Unit) {
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = "Password Test",
-                fontSize = 20.sp,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
                 color = Color.White,
                 modifier = Modifier
             )
         }
     }
+}
+
+@Preview
+@Composable
+fun CardsPreview() {
+    ToolsMenu(navController = NavController(LocalContext.current))
 }

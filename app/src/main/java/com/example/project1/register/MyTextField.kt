@@ -1,6 +1,5 @@
-package com.example.project1.Register
+package com.example.project1.register
 
-import android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable

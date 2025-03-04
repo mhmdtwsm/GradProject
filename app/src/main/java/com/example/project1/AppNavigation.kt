@@ -5,8 +5,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.project1.onboard.OnboardingScreen
-import com.example.project1.Register.LoginScreen
-import com.example.project1.Register.RegisterScreen
+import com.example.project1.register.LoginScreen
+import com.example.project1.register.RegisterScreen
 import com.example.project1.home.HomeScreen
 import com.example.project1.tools.passwordtest.PasswordTest
 import com.example.project1.tools.ToolsMenu
@@ -78,7 +78,7 @@ fun AppNavigation(startDestination: String = Screen.Onboarding.route) {
         }
 
         composable(Screen.PasswordTest.route) {
-            PasswordTest()
+            PasswordTest( navController = navController)
         }
     }
 }

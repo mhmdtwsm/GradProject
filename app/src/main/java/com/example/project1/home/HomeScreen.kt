@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.project1.R
+import com.example.project1.Screen
 
 @Composable
 fun HomeScreen(userName: String = "User_1", navController: NavController) {
@@ -90,7 +91,7 @@ fun HomeScreen(userName: String = "User_1", navController: NavController) {
         Spacer(modifier = Modifier.weight(1f))
 
         // Bottom Navigation
-        BottomNavigationBar(navController)
+        BottomNavigationBar(navController = navController, selectedScreen = Screen.Home.route)
     }
 }
 

@@ -12,13 +12,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.project1.R
 import com.example.project1.Screen
 
 @Composable
-fun BottomNavigationBar(navController: NavController) {
+fun BottomNavigationBar(navController: NavController, selectedScreen: String, txtSize: Int = 10) {
     BottomNavigation(
         backgroundColor = Color(0xFF1C2431),
         contentColor = Color.White,
@@ -29,30 +31,39 @@ fun BottomNavigationBar(navController: NavController) {
         BottomNavigationItem(
             icon = {
                 Icon(
-                    painterResource(
-                        id = R.drawable.ic_home
-                    ),
+                    painterResource(id = R.drawable.ic_home),
                     contentDescription = "Home",
                     modifier = Modifier.size(40.dp),
+                    tint = if (selectedScreen == Screen.Home.route) Color.White else Color.Gray
                 )
             },
-            label = { Text("Home") },
-            selected = true,
+            label = {
+                Text(
+                    fontWeight = FontWeight.Bold,
+                    text = "Home",
+                    fontSize = txtSize.sp
+                )
+            }, selected = selectedScreen == Screen.Home.route,
             modifier = Modifier.padding(vertical = 5.dp),
-            onClick = {}
+            onClick = { navController.navigate(Screen.Home.route) }
         )
         BottomNavigationItem(
             icon = {
                 Icon(
-                    painterResource(
-                        id = R.drawable.ic_link
-                    ),
+                    painterResource(id = R.drawable.ic_link),
                     contentDescription = "URL",
                     modifier = Modifier.size(40.dp),
+                    tint = if (selectedScreen == Screen.ToolsMenu.route) Color.White else Color.Gray
                 )
             },
-            label = { Text("URL") },
-            selected = false,
+            label = {
+                Text(
+                    fontWeight = FontWeight.Bold,
+                    text = "URL",
+                    fontSize = txtSize.sp
+                )
+            },
+            selected = selectedScreen == Screen.ToolsMenu.route,
             modifier = Modifier.padding(vertical = 5.dp),
             onClick = {}
         )
@@ -62,13 +73,17 @@ fun BottomNavigationBar(navController: NavController) {
                     painterResource(id = R.drawable.ic_message),
                     contentDescription = "SMS",
                     modifier = Modifier.size(40.dp),
-
-                    )
+                    tint = if (selectedScreen == Screen.ToolsMenu.route) Color.White else Color.Gray
+                )
             },
-            label = { Text("SMS") },
-            selected = false,
+            label = {
+                Text(
+                    fontWeight = FontWeight.Bold,
+                    text = "SMS",
+                    fontSize = txtSize.sp
+                )
+            }, selected = selectedScreen == Screen.ToolsMenu.route,
             modifier = Modifier.padding(vertical = 5.dp),
-
             onClick = {}
         )
         BottomNavigationItem(
@@ -76,29 +91,39 @@ fun BottomNavigationBar(navController: NavController) {
                 Icon(
                     painterResource(id = R.drawable.ic_tools),
                     contentDescription = "Tools",
-                    modifier = Modifier.size(37.dp),
+                    modifier = Modifier.size(40.dp),
+                    tint = if (selectedScreen == Screen.ToolsMenu.route) Color.White else Color.Gray
                 )
             },
-            label = { Text("Tools") },
-            selected = false,
-            modifier = Modifier.padding(vertical = 5.dp),
+            label = {
+                Text(
+                    text = "Tools",
+                    fontSize = txtSize.sp,
+                    fontWeight = FontWeight.Bold,
 
-            onClick = {
-                navController.navigate(Screen.ToolsMenu.route)
-            }
+                )
+            },
+            selected = selectedScreen == Screen.ToolsMenu.route,
+            modifier = Modifier.padding(vertical = 5.dp),
+            onClick = { navController.navigate(Screen.ToolsMenu.route) }
         )
         BottomNavigationItem(
             icon = {
                 Icon(
                     painterResource(id = R.drawable.ic_settings),
                     contentDescription = "Settings",
-                    modifier = Modifier.size(38.dp),
+                    modifier = Modifier.size(40.dp),
+                    tint = if (selectedScreen == Screen.ToolsMenu.route) Color.White else Color.Gray
                 )
             },
-            label = { Text("Setting") },
-            selected = false,
+            label = {
+                Text(
+                    text = "Settings",
+                    fontSize = txtSize.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }, selected = selectedScreen == Screen.ToolsMenu.route,
             modifier = Modifier.padding(vertical = 5.dp),
-
             onClick = {}
         )
     }
