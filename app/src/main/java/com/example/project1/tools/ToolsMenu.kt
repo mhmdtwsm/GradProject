@@ -79,7 +79,7 @@ fun Cardy(onClick: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp)
-                .border(1.dp, Color.Gray, RoundedCornerShape(12.dp)),
+                .border(3.dp, Color.Gray, RoundedCornerShape(12.dp)),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
         ) {
@@ -88,20 +88,19 @@ fun Cardy(onClick: () -> Unit) {
                 contentDescription = "Password Test",
                 tint = Color.White,
                 modifier = Modifier
-                    .size(80.dp)
-                    .padding(horizontal = 12.dp),
+                    .size(70.dp)
+                    .padding(vertical = 10.dp),
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = "Password Test",
-                fontSize = 25.sp,
-                color = Color.White
+                fontSize = 20.sp,
+                color = Color.White,
+                modifier = Modifier
             )
         }
     }
 }
-
-
 
 
 @Preview
