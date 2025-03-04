@@ -8,7 +8,7 @@ import com.example.project1.onboard.OnboardingScreen
 import com.example.project1.Register.LoginScreen
 import com.example.project1.Register.RegisterScreen
 import com.example.project1.home.HomeScreen
-import com.example.project1.tools.PasswordTest
+import com.example.project1.tools.passwordtest.PasswordTest
 import com.example.project1.tools.ToolsMenu
 
 sealed class Screen(val route: String) {

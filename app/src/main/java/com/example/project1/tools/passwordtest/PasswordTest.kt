@@ -1,4 +1,4 @@
-package com.example.project1.tools
+package com.example.project1.tools.passwordtest
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable

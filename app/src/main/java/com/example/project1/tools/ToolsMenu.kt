@@ -54,50 +54,11 @@ fun ToolsMenu(modifier: Modifier = Modifier, navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Cardy(onClick = { navController.navigate(Screen.PasswordTest.route) })
-            Cardy(onClick = { navController.navigate(Screen.PasswordTest.route) })
-            Cardy(onClick = { navController.navigate(Screen.PasswordTest.route) })
-            Cardy(onClick = { navController.navigate(Screen.PasswordTest.route) })
+            Cards(onClick = { navController.navigate(Screen.PasswordTest.route) })
+            Cards(onClick = { navController.navigate(Screen.PasswordTest.route) })
+            Cards(onClick = { navController.navigate(Screen.PasswordTest.route) })
+            Cards(onClick = { navController.navigate(Screen.PasswordTest.route) })
 
-        }
-    }
-
-}
-
-@Composable
-fun Cardy(onClick: () -> Unit) {
-    Card(
-        shape = RoundedCornerShape(12.dp),
-        elevation = 0.dp, // Remove any shadow that might look like a border
-        backgroundColor = Color(0xFF1C2431), // Ensure background matches parent
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clickable(onClick = onClick)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
-                .border(3.dp, Color.Gray, RoundedCornerShape(12.dp)),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_chat),
-                contentDescription = "Password Test",
-                tint = Color.White,
-                modifier = Modifier
-                    .size(70.dp)
-                    .padding(vertical = 10.dp),
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = "Password Test",
-                fontSize = 20.sp,
-                color = Color.White,
-                modifier = Modifier
-            )
         }
     }
 }
