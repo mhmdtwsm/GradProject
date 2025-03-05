@@ -53,7 +53,7 @@ fun BottomNavigationBar(navController: NavController, selectedScreen: String, tx
                     painterResource(id = R.drawable.ic_link),
                     contentDescription = "URL",
                     modifier = Modifier.size(40.dp),
-                    tint = if (selectedScreen == Screen.ToolsMenu.route) Color.White else Color.Gray
+                    tint = if (selectedScreen == Screen.URL.route) Color.White else Color.Gray
                 )
             },
             label = {
@@ -63,9 +63,11 @@ fun BottomNavigationBar(navController: NavController, selectedScreen: String, tx
                     fontSize = txtSize.sp
                 )
             },
-            selected = selectedScreen == Screen.ToolsMenu.route,
+            selected = selectedScreen == Screen.URL.route,
             modifier = Modifier.padding(vertical = 5.dp),
-            onClick = {}
+            onClick = {
+                navController.navigate(Screen.URL.route)
+            }
         )
         BottomNavigationItem(
             icon = {
@@ -73,7 +75,7 @@ fun BottomNavigationBar(navController: NavController, selectedScreen: String, tx
                     painterResource(id = R.drawable.ic_message),
                     contentDescription = "SMS",
                     modifier = Modifier.size(40.dp),
-                    tint = if (selectedScreen == Screen.ToolsMenu.route) Color.White else Color.Gray
+                    tint = if (selectedScreen == Screen.SMS.route) Color.White else Color.Gray
                 )
             },
             label = {
@@ -82,9 +84,11 @@ fun BottomNavigationBar(navController: NavController, selectedScreen: String, tx
                     text = "SMS",
                     fontSize = txtSize.sp
                 )
-            }, selected = selectedScreen == Screen.ToolsMenu.route,
+            }, selected = selectedScreen == Screen.SMS.route,
             modifier = Modifier.padding(vertical = 5.dp),
-            onClick = {}
+            onClick = {
+                navController.navigate(Screen.SMS.route)
+            }
         )
         BottomNavigationItem(
             icon = {
@@ -101,7 +105,7 @@ fun BottomNavigationBar(navController: NavController, selectedScreen: String, tx
                     fontSize = txtSize.sp,
                     fontWeight = FontWeight.Bold,
 
-                )
+                    )
             },
             selected = selectedScreen == Screen.ToolsMenu.route,
             modifier = Modifier.padding(vertical = 5.dp),
@@ -113,7 +117,7 @@ fun BottomNavigationBar(navController: NavController, selectedScreen: String, tx
                     painterResource(id = R.drawable.ic_settings),
                     contentDescription = "Settings",
                     modifier = Modifier.size(40.dp),
-                    tint = if (selectedScreen == Screen.ToolsMenu.route) Color.White else Color.Gray
+                    tint = if (selectedScreen == Screen.Settings.route) Color.White else Color.Gray
                 )
             },
             label = {
@@ -122,9 +126,11 @@ fun BottomNavigationBar(navController: NavController, selectedScreen: String, tx
                     fontSize = txtSize.sp,
                     fontWeight = FontWeight.Bold,
                 )
-            }, selected = selectedScreen == Screen.ToolsMenu.route,
+            }, selected = selectedScreen == Screen.Settings.route,
             modifier = Modifier.padding(vertical = 5.dp),
-            onClick = {}
+            onClick = {
+                navController.navigate(Screen.Settings.route)
+            }
         )
     }
 }

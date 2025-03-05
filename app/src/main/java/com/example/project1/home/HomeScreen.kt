@@ -71,9 +71,13 @@ fun HomeScreen(userName: String = "User_1", navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                HomeButtons("Probability URL", R.drawable.ic_link)
+                HomeButtons("Probability URL", R.drawable.ic_link, onClick = {
+                    navController.navigate(Screen.URL.route)
+                })
                 Spacer(modifier = Modifier.width(16.dp)) // Add spacing between buttons()
-                HomeButtons("Probability SMS", R.drawable.ic_message)
+                HomeButtons("Probability SMS", R.drawable.ic_message, onClick = {
+                    navController.navigate(Screen.SMS.route)
+                })
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -82,9 +86,13 @@ fun HomeScreen(userName: String = "User_1", navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                HomeButtons("Chat with AI", R.drawable.ic_chat)
+                HomeButtons("Chat with AI", R.drawable.ic_chat, onClick = {
+
+                })
                 Spacer(modifier = Modifier.width(16.dp)) // Add spacing between buttons()
-                HomeButtons("Learn & Protect", R.drawable.ic_education)
+                HomeButtons("Learn & Protect", R.drawable.ic_education, onClick = {
+                    
+                })
             }
         }
 
@@ -94,9 +102,6 @@ fun HomeScreen(userName: String = "User_1", navController: NavController) {
         BottomNavigationBar(navController = navController, selectedScreen = Screen.Home.route)
     }
 }
-
-
-
 
 
 @Preview(showBackground = true)

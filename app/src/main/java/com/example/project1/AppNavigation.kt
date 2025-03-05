@@ -17,6 +17,9 @@ sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Register : Screen("register")
     object Home : Screen("home")
+    object URL : Screen("url")
+    object SMS : Screen("sms")
+    object Settings : Screen("settings")
     object ToolsMenu : Screen("toolsMenu")
     object PasswordTest : Screen("passwordTest")
     object PasswordGenerate : Screen("passwordGenerate")
@@ -73,6 +76,18 @@ fun AppNavigation(startDestination: String = Screen.Onboarding.route) {
         // Home Screen
         composable(Screen.Home.route) {
             HomeScreen(userName = "User_1", navController = navController)
+        }
+
+        composable(Screen.URL.route) {
+            URLScreen(navController = navController)
+        }
+
+        composable(Screen.SMS.route) {
+            SMSScreen(navController = navController)
+        }
+
+        composable(Screen.Settings.route) {
+            SettingsScreen(navController = navController)
         }
 
         composable(Screen.ToolsMenu.route) {

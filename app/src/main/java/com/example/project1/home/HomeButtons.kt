@@ -22,18 +22,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.lang.reflect.Method
 
 @Composable
-fun HomeButtons(title: String, icon: Int, iconSize: Int = 70) {
+fun HomeButtons(title: String, icon: Int, iconSize: Int = 70, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(12.dp),
         elevation = 8.dp,
         modifier = Modifier
             .size(width = 150.dp, height = 180.dp)
             .shadow(8.dp, RoundedCornerShape(12.dp))
-            .clickable(onClick = { /*TODO add the navigation to the onclick*/
-
-            })
+            .clickable(onClick = onClick)
     ) {
         Column(
             modifier = Modifier

@@ -191,8 +191,8 @@ fun PasswordGenerate(navController: NavController) {
             IconButton(
                 onClick = { password = "" },
                 modifier = Modifier
-                    .background(Color(0xFF2E3B4E), RoundedCornerShape(8.dp))
-                    .padding(8.dp)
+                    .background(Color(0xFF2E3B4E), RoundedCornerShape(15.dp))
+                    .padding(5.dp)
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_delete),
@@ -212,8 +212,8 @@ fun PasswordGenerate(navController: NavController) {
                     )
                 },
                 modifier = Modifier
-                    .background(Color(0xFF2E3B4E), RoundedCornerShape(8.dp))
-                    .padding(8.dp)
+                    .background(Color(0xFF2E3B4E), RoundedCornerShape(15.dp))
+                    .padding(5.dp)
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_refresh),
