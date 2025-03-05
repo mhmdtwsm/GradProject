@@ -62,8 +62,14 @@ fun ToolsMenu(modifier: Modifier = Modifier, navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Cards(onClick = { navController.navigate(Screen.PasswordTest.route) })
-            Cards(onClick = { navController.navigate(Screen.PasswordGenerate.route) })
+            Cards(
+                iconId = R.drawable.passwordcheck,
+                title = "Password Test",
+                onClick = { navController.navigate(Screen.PasswordTest.route) })
+            Cards(
+                iconId = R.drawable.passwordgenerate,
+                title = "Password Generate",
+                onClick = { navController.navigate(Screen.PasswordGenerate.route) })
 
 
         }

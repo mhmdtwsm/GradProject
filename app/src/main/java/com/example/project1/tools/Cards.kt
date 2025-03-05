@@ -28,7 +28,7 @@ import com.example.project1.R
 import com.example.project1.Screen
 
 @Composable
-fun Cards(onClick: () -> Unit) {
+fun Cards(iconId: Int, title: String, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(12.dp),
         elevation = 0.dp, // Remove any shadow that might look like a border
@@ -47,8 +47,8 @@ fun Cards(onClick: () -> Unit) {
             horizontalArrangement = Arrangement.Center,
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_chat),
-                contentDescription = "Password Test",
+                painter = painterResource(id = iconId),
+                contentDescription = "$title",
                 tint = Color.White,
                 modifier = Modifier
                     .size(70.dp)
@@ -56,8 +56,8 @@ fun Cards(onClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = "Password Test",
-                fontSize = 16.sp,
+                text = "$title",
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
                 modifier = Modifier
