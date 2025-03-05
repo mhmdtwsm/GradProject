@@ -115,7 +115,7 @@ fun PasswordTest(navController: NavController) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 40.dp),
+                .padding(top = 16.dp),
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -129,7 +129,7 @@ fun PasswordTest(navController: NavController) {
             Spacer(modifier = Modifier.weight(0.69f))
             Text(
                 "Password Test",
-                fontSize = 30.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )

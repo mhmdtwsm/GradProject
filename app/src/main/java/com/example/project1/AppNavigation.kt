@@ -10,6 +10,7 @@ import com.example.project1.register.RegisterScreen
 import com.example.project1.home.HomeScreen
 import com.example.project1.tools.passwordtest.PasswordTest
 import com.example.project1.tools.ToolsMenu
+import com.example.project1.tools.passwordgenerate.PasswordGenerate
 
 sealed class Screen(val route: String) {
     object Onboarding : Screen("onboarding")
@@ -18,6 +19,7 @@ sealed class Screen(val route: String) {
     object Home : Screen("home")
     object ToolsMenu : Screen("toolsMenu")
     object PasswordTest : Screen("passwordTest")
+    object PasswordGenerate : Screen("passwordGenerate")
 }
 
 @Composable
@@ -78,7 +80,11 @@ fun AppNavigation(startDestination: String = Screen.Onboarding.route) {
         }
 
         composable(Screen.PasswordTest.route) {
-            PasswordTest( navController = navController)
+            PasswordTest(navController = navController)
+        }
+
+        composable(Screen.PasswordGenerate.route) {
+            PasswordGenerate(navController = navController)
         }
     }
 }

@@ -38,12 +38,12 @@ fun ToolsMenu(modifier: Modifier = Modifier, navController: NavController) {
     ) {
         Text(
             text = "Tools",
-            fontSize = 30.sp,
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .padding(top = 40.dp, bottom = 20.dp)
+                .padding(top = 16.dp, bottom = 20.dp)
         )
         Image(
             painter = painterResource(id = R.drawable.line),
@@ -63,9 +63,8 @@ fun ToolsMenu(modifier: Modifier = Modifier, navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Cards(onClick = { navController.navigate(Screen.PasswordTest.route) })
-            Cards(onClick = { navController.navigate(Screen.PasswordTest.route) })
-            Cards(onClick = { navController.navigate(Screen.PasswordTest.route) })
-            Cards(onClick = { navController.navigate(Screen.PasswordTest.route) })
+            Cards(onClick = { navController.navigate(Screen.PasswordGenerate.route) })
+
 
         }
         Spacer(modifier = Modifier.weight(1f))
