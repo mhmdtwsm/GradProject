@@ -1,3 +1,5 @@
+package com.example.project1.settings
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.project1.R
-import com.example.project1.Screen
 import com.example.project1.home.BottomNavigationBar
 import org.intellij.lang.annotations.Language
 
@@ -126,12 +127,16 @@ fun SettingsScreen(navController: NavController) {
             SettingsItem(
                 icon = Icons.Default.Info,
                 title = "Help & Support",
-                onClick = { /** TODO Handle help & support action **/ }
+                onClick = {
+                    navController.navigate(Screen.Help.route)
+                }
             )
             SettingsItem(
                 icon = Icons.Default.Info,
                 title = "Terms and Policies",
-                onClick = { /** TODO Handle terms and policies action **/ }
+                onClick = {
+                    navController.navigate(Screen.Terms.route)
+                }
             )
 
             Spacer(modifier = Modifier.height(24.dp))

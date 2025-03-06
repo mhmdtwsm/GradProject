@@ -20,7 +20,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.example.project1.R
-import com.example.project1.Screen
 
 @Composable
 fun BottomNavigationBar(navController: NavController, selectedScreen: String, txtSize: Int = 10) {

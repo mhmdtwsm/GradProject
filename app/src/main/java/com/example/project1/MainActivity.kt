@@ -1,5 +1,6 @@
 package com.example.project1
 
+import AppNavigation
 import android.os.Bundle
 import android.view.View
 import androidx.activity.ComponentActivity

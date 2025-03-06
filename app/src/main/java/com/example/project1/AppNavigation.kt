@@ -1,17 +1,19 @@
-package com.example.project1
-
-import SettingsScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.project1.SMSScreen
+import com.example.project1.URLScreen
 import com.example.project1.onboard.OnboardingScreen
 import com.example.project1.register.LoginScreen
 import com.example.project1.register.RegisterScreen
 import com.example.project1.home.HomeScreen
+import com.example.project1.settings.terms.TermsScreen
 import com.example.project1.tools.passwordtest.PasswordTest
 import com.example.project1.tools.ToolsMenu
 import com.example.project1.tools.passwordgenerate.PasswordGenerate
+import com.example.project1.settings.SettingsScreen
+import com.example.project1.settings.help.HelpScreen
 
 sealed class Screen(val route: String) {
     object Onboarding : Screen("onboarding")
@@ -93,10 +95,18 @@ fun AppNavigation(startDestination: String = Screen.Onboarding.route) {
             SMSScreen(navController = navController)
         }
 
+        // Settings Screen
         composable(Screen.Settings.route) {
             SettingsScreen(navController = navController)
         }
+        composable(Screen.Terms.route) {
+            TermsScreen(navController = navController)
+        }
+        composable(Screen.Help.route) {
+            HelpScreen(navController = navController)
+        }
 
+        // Tools Menu
         composable(Screen.ToolsMenu.route) {
             ToolsMenu(navController = navController)
         }

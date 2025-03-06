@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.project1.R
-import com.example.project1.Screen
 
 @Composable
 fun Cards(iconId: Int, title: String, onClick: () -> Unit) {
