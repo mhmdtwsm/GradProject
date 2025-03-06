@@ -30,55 +30,58 @@ import com.example.project1.home.BottomNavigationBar
 
 @Composable
 fun ToolsMenu(modifier: Modifier = Modifier, navController: NavController) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF1C2431))
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Tools",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(top = 16.dp, bottom = 20.dp)
-        )
-        Image(
-            painter = painterResource(id = R.drawable.line),
-            contentDescription = "line",
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .size(width = 300.dp, height = 4.dp)
-        )
+    Scaffold(
+        bottomBar = {
+            BottomNavigationBar(
+                navController = navController,
+                selectedScreen = Screen.ToolsMenu.route
+            )
+        }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF1C2431))
                 .padding(16.dp)
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Text(
+                text = "Tools",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 16.dp, bottom = 20.dp)
+            )
+            Image(
+                painter = painterResource(id = R.drawable.line),
+                contentDescription = "line",
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .size(width = 300.dp, height = 4.dp)
+            )
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Cards(
-                iconId = R.drawable.passwordcheck,
-                title = "Password Test",
-                onClick = { navController.navigate(Screen.PasswordTest.route) })
-            Cards(
-                iconId = R.drawable.passwordgenerate,
-                title = "Password Generate",
-                onClick = { navController.navigate(Screen.PasswordGenerate.route) })
+                Cards(
+                    iconId = R.drawable.passwordcheck,
+                    title = "Password Test",
+                    onClick = { navController.navigate(Screen.PasswordTest.route) })
+                Cards(
+                    iconId = R.drawable.passwordgenerate,
+                    title = "Password Generate",
+                    onClick = { navController.navigate(Screen.PasswordGenerate.route) })
 
 
+            }
         }
-        Spacer(modifier = Modifier.weight(1f))
-
-        BottomNavigationBar(
-            navController = navController,
-            selectedScreen = Screen.ToolsMenu.route
-        )
     }
 }
 

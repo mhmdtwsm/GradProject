@@ -1,6 +1,7 @@
 package com.example.project1.home
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,24 +10,27 @@ import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.example.project1.R
 import com.example.project1.Screen
 
 @Composable
 fun BottomNavigationBar(navController: NavController, selectedScreen: String, txtSize: Int = 10) {
+
     BottomNavigation(
         backgroundColor = Color(0xFF1C2431),
         contentColor = Color.White,
         modifier = Modifier
-            .padding(vertical = 5.dp)
-            .border(2.dp, Color.White, RoundedCornerShape(12.dp))
+            .padding(vertical = 10.dp)
+            .zIndex(1f)
     ) {
         BottomNavigationItem(
             icon = {

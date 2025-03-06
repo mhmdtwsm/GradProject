@@ -1,5 +1,6 @@
 package com.example.project1
 
+import SettingsScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -19,7 +20,13 @@ sealed class Screen(val route: String) {
     object Home : Screen("home")
     object URL : Screen("url")
     object SMS : Screen("sms")
+
+    // Settings Navigations
     object Settings : Screen("settings")
+    object Terms : Screen("terms")
+    object Help : Screen("help")
+
+    // Tools Menu Navigations
     object ToolsMenu : Screen("toolsMenu")
     object PasswordTest : Screen("passwordTest")
     object PasswordGenerate : Screen("passwordGenerate")
