@@ -25,84 +25,82 @@ import androidx.navigation.NavController
 import com.example.project1.R
 import java.util.regex.Pattern
 
+fun checkPasswordStrength(input: String): Pair<String, Color> {
+    var score = 0
+
+    // 1. Length Check
+    when {
+        input.length < 8 -> score += 0
+        input.length in 8..11 -> score += 5
+        input.length in 12..15 -> score += 15
+        input.length >= 16 -> score += 20
+    }
+
+    // 2. Character Variety Check
+    val hasLower = input.any { it.isLowerCase() }
+    val hasUpper = input.any { it.isUpperCase() }
+    val hasDigit = input.any { it.isDigit() }
+    val hasSymbol = input.any { !it.isLetterOrDigit() }
+
+    when {
+        hasLower && hasUpper && hasDigit && hasSymbol -> score += 20
+        hasLower && hasUpper && hasDigit -> score += 10
+        hasLower && hasUpper -> score += 5
+        else -> score += 0
+    }
+
+    // 3. Repetitions & Patterns Check
+    val repeatedPattern = Pattern.compile("(.)\\1{3,}") // Detects repeated characters
+    val commonPatterns =
+        listOf("123456", "qwerty", "abcdef", "111111", "password", "admin", "letmein")
+
+    if (repeatedPattern.matcher(input).find()) score -= 10
+    if (commonPatterns.any { input.contains(it, ignoreCase = true) }) score -= 10
+
+    // 4. Dictionary & Common Words Check
+    val weakWords = listOf("password", "admin", "welcome", "hello", "letmein")
+    if (weakWords.any { input.contains(it, ignoreCase = true) }) score -= 15
+
+    // Determine Strength
+    return when {
+        score <= 10 -> Pair("❌ Weak\nUse more variety and avoid common words.", Color.Red)
+        score in 11..30 -> Pair(
+            "⚠️ Moderate\nTry adding symbols and increasing length.",
+            Color.Yellow
+        )
+
+        score in 31..50 -> Pair("✅ Strong\nGood job!", Color.Green)
+        else -> Pair("🏆 Very Strong!\nYour password is well-protected.", Color.Blue)
+    }
+}
+
+fun pasteFromClipboard(context: Context): String? {
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    val clipData = clipboard.primaryClip
+    return if (clipData != null && clipData.itemCount > 0) {
+        clipData.getItemAt(0).text.toString()
+    } else {
+        Toast.makeText(context, "Clipboard is empty!", Toast.LENGTH_SHORT).show()
+        null
+    }
+}
+
 @Composable
 fun PasswordTest(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var passwordStrength by remember { mutableStateOf("Your Password is weak\nUse 8+ characters.\nAdd Aa, 123, @#!.\nAvoid names/dates.") }
     var backgroundColor by remember { mutableStateOf(Color.Gray) }
-
-    fun checkPasswordStrength(input: String) {
-        var score = 0
-
-        // 1. Length Check
-        when {
-            input.length < 8 -> score += 0
-            input.length in 8..11 -> score += 5
-            input.length in 12..15 -> score += 15
-            input.length >= 16 -> score += 20
-        }
-
-        // 2. Character Variety Check
-        val hasLower = input.any { it.isLowerCase() }
-        val hasUpper = input.any { it.isUpperCase() }
-        val hasDigit = input.any { it.isDigit() }
-        val hasSymbol = input.any { !it.isLetterOrDigit() }
-
-        when {
-            hasLower && hasUpper && hasDigit && hasSymbol -> score += 20
-            hasLower && hasUpper && hasDigit -> score += 10
-            hasLower && hasUpper -> score += 5
-            else -> score += 0
-        }
-
-        // 3. Repetitions & Patterns Check
-        val repeatedPattern = Pattern.compile("(.)\\1{3,}") // Detects repeated characters
-        val commonPatterns =
-            listOf("123456", "qwerty", "abcdef", "111111", "password", "admin", "letmein")
-
-        if (repeatedPattern.matcher(input).find()) score -= 10
-        if (commonPatterns.any { input.contains(it, ignoreCase = true) }) score -= 10
-
-        // 4. Dictionary & Common Words Check
-        val weakWords = listOf("password", "admin", "welcome", "hello", "letmein")
-        if (weakWords.any { input.contains(it, ignoreCase = true) }) score -= 15
-
-        // Determine Strength
-        when {
-            score <= 10 -> {
-                passwordStrength = "❌ Weak\nUse more variety and avoid common words."
-                backgroundColor = Color.Red
-            }
-
-            score in 11..30 -> {
-                passwordStrength = "⚠️ Moderate\nTry adding symbols and increasing length."
-                backgroundColor = Color.Yellow
-            }
-
-            score in 31..50 -> {
-                passwordStrength = "✅ Strong\nGood job!"
-                backgroundColor = Color.Green
-            }
-
-            else -> {
-                passwordStrength = "🏆 Very Strong!\nYour password is well-protected."
-                backgroundColor = Color.Blue
-            }
-        }
-    }
-
-    fun pasteFromClipboard(context: Context, onPaste: (String) -> Unit) {
-        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clipData = clipboard.primaryClip
-        if (clipData != null && clipData.itemCount > 0) {
-            val pastedText = clipData.getItemAt(0).text.toString()
-            onPaste(pastedText)
-        } else {
-            Toast.makeText(context, "Clipboard is empty!", Toast.LENGTH_SHORT).show()
-        }
-    }
-
     val context = LocalContext.current
+
+    // Effect to automatically paste and test clipboard content when screen opens
+    LaunchedEffect(Unit) {
+        pasteFromClipboard(context)?.let { clipboardContent ->
+            password = clipboardContent
+            val (strength, color) = checkPasswordStrength(clipboardContent)
+            passwordStrength = strength
+            backgroundColor = color
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -124,7 +122,7 @@ fun PasswordTest(navController: NavController) {
                 contentDescription = "Back",
                 modifier = Modifier
                     .size(30.dp)
-                    .clickable { navController.popBackStack() }
+                    .clickable { navController.navigate(Screen.ToolsMenu.route) }
             )
             Spacer(modifier = Modifier.weight(0.69f))
             Text(
@@ -177,7 +175,12 @@ fun PasswordTest(navController: NavController) {
             ) {
                 TextField(
                     value = password,
-                    onValueChange = { password = it },
+                    onValueChange = { newPassword ->
+                        password = newPassword
+                        val (strength, color) = checkPasswordStrength(newPassword)
+                        passwordStrength = strength
+                        backgroundColor = color
+                    },
                     singleLine = true,
                     modifier = Modifier.weight(1f),
                     colors = TextFieldDefaults.textFieldColors(
@@ -185,7 +188,14 @@ fun PasswordTest(navController: NavController) {
                         textColor = Color.White
                     )
                 )
-                IconButton(onClick = { pasteFromClipboard(context) { password = it } }) {
+                IconButton(onClick = {
+                    pasteFromClipboard(context)?.let { clipboardContent ->
+                        password = clipboardContent
+                        val (strength, color) = checkPasswordStrength(clipboardContent)
+                        passwordStrength = strength
+                        backgroundColor = color
+                    }
+                }) {
                     Icon(
                         painter = painterResource(id = R.drawable.clipboard),
                         contentDescription = "Paste",
@@ -196,7 +206,11 @@ fun PasswordTest(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = { checkPasswordStrength(password) },
+                onClick = {
+                    val (strength, color) = checkPasswordStrength(password)
+                    passwordStrength = strength
+                    backgroundColor = color
+                },
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.padding(8.dp)

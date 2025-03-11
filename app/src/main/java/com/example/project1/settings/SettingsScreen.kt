@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.project1.R
 import com.example.project1.home.BottomNavigationBar
-import org.intellij.lang.annotations.Language
 
 @Composable
 fun SettingsScreen(navController: NavController) {
