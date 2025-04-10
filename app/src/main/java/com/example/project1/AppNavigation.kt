@@ -35,7 +35,10 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
-fun AppNavigation(startDestination: String = Screen.Onboarding.route) {
+fun AppNavigation(
+    startDestination: String = Screen.Onboarding.route,
+    autoScan: Boolean = false
+) {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = startDestination) {
@@ -88,7 +91,10 @@ fun AppNavigation(startDestination: String = Screen.Onboarding.route) {
         }
 
         composable(Screen.URL.route) {
-            URLScreen(navController = navController)
+            URLScreen(
+                navController = navController,
+                autoScan = autoScan
+            )
         }
 
         composable(Screen.SMS.route) {
@@ -120,3 +126,4 @@ fun AppNavigation(startDestination: String = Screen.Onboarding.route) {
         }
     }
 }
+

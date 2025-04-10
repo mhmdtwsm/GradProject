@@ -5,7 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +34,7 @@ fun HomeScreen(userName: String = "User_1", navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFF1C2431)) // Dark background color
+                .padding(innerPadding)
                 .padding(16.dp)
         ) {
             Spacer(modifier = Modifier.height(16.dp))

@@ -11,11 +11,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.WindowCompat
+
 import com.example.project1.service.ClipboardService
 import com.example.project1.ui.theme.Project1Theme
 
 class MainActivity : ComponentActivity() {
-    private var shouldNavigateToPasswordTest = false
+    private var startDestination = Screen.Home.route
+    private var autoScan: Boolean = false
 
     // Permission launcher for notification permission
     private val requestPermissionLauncher = registerForActivityResult(
@@ -30,8 +32,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         hideSystemNavigationBar()
 
-        // Check if we should navigate to password test
-        shouldNavigateToPasswordTest = intent?.action == "OPEN_PASSWORD_TEST"
+        // Check if we should navigate to URL scan
+        when (intent?.action) {
+            "OPEN_PASSWORD_TEST" -> startDestination = Screen.PasswordTest.route
+            "OPEN_URL_SCAN" -> {
+                startDestination = Screen.URL.route
+                autoScan = intent.getBooleanExtra("AUTO_SCAN", false)
+            }
+        }
 
         // Request notification permission for Android 13+ at app start
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -43,7 +51,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             Project1Theme {
                 AppNavigation(
-                    startDestination = if (shouldNavigateToPasswordTest) "passwordTest" else "home"
+                    startDestination = startDestination,
+                    autoScan = autoScan
                 )
             }
         }
@@ -86,3 +95,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+

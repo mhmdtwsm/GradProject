@@ -39,20 +39,22 @@ class ClipboardService : Service() {
     private fun showNotification() {
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            // Add action to navigate to password test screen
-            action = "OPEN_PASSWORD_TEST"
+            // Change action to navigate to URL screen
+            action = "OPEN_URL_SCAN"
+            // Add flag to auto-scan
+            putExtra("AUTO_SCAN", true)
         }
 
         val pendingIntent = PendingIntent.getActivity(
             this,
             0,
             notificationIntent,
-            PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Password Test")
-            .setContentText("Tap to test clipboard content as password")
+            .setContentTitle("URL Scan")
+            .setContentText("Tap to scan URL from clipboard")
             .setSmallIcon(R.drawable.clipboard)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
@@ -61,3 +63,4 @@ class ClipboardService : Service() {
         startForeground(NOTIFICATION_ID, notification)
     }
 }
+

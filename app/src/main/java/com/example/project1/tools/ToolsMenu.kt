@@ -29,7 +29,7 @@ import com.example.project1.home.BottomNavigationBar
 
 @Composable
 fun ToolsMenu(modifier: Modifier = Modifier, navController: NavController) {
-    Scaffold(
+    androidx.compose.material3.Scaffold(
         bottomBar = {
             BottomNavigationBar(
                 navController = navController,
@@ -40,46 +40,36 @@ fun ToolsMenu(modifier: Modifier = Modifier, navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF1C2431))
-                .padding(16.dp)
+                .background(Color(0xFF1C2431)) // Dark blue background
+                .padding(innerPadding)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+
         ) {
-            Text(
+            // Header
+            androidx.compose.material3.Text(
                 text = "Tools",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(top = 16.dp, bottom = 20.dp)
+                modifier = Modifier.padding(vertical = 16.dp)
             )
-            Image(
-                painter = painterResource(id = R.drawable.line),
-                contentDescription = "line",
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .size(width = 300.dp, height = 4.dp)
-            )
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
 
-                Spacer(modifier = Modifier.height(16.dp))
+            androidx.compose.material3.Divider(color = Color.Gray.copy(alpha = 0.5f))
 
-                Cards(
-                    iconId = R.drawable.passwordcheck,
-                    title = "Password Test",
-                    onClick = { navController.navigate(Screen.PasswordTest.route) })
-                Cards(
-                    iconId = R.drawable.passwordgenerate,
-                    title = "Password Generate",
-                    onClick = { navController.navigate(Screen.PasswordGenerate.route) })
+            Spacer(modifier = Modifier.height(24.dp))
 
 
-            }
+            Cards(
+                iconId = R.drawable.passwordcheck,
+                title = "Password Test",
+                onClick = { navController.navigate(Screen.PasswordTest.route) })
+            Cards(
+                iconId = R.drawable.passwordgenerate,
+                title = "Password Generate",
+                onClick = { navController.navigate(Screen.PasswordGenerate.route) })
+
+
         }
     }
 }

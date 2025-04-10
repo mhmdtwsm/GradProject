@@ -46,7 +46,7 @@ fun SettingsScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(darkNavy)
+                .background(Color(0xFF1C2431))
                 .verticalScroll(scrollState)
                 .padding(innerPadding) // Avoid overlapping with bottom bar
                 .padding(16.dp)
@@ -58,18 +58,12 @@ fun SettingsScreen(navController: NavController) {
                 color = Color.White,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
-                    .padding(top = 16.dp, bottom = 20.dp)
+                    .padding(vertical = 16.dp)
             )
 
-            Image(
-                painter = painterResource(id = R.drawable.line),
-                contentDescription = "line",
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .size(width = 300.dp, height = 4.dp)
-            )
+            androidx.compose.material3.Divider(color = Color.Gray.copy(alpha = 0.5f))
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Account & Privacy Section
             SectionTitle("Account & Privacy")

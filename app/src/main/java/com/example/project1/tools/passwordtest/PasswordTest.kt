@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.project1.R
+import com.example.project1.home.BottomNavigationBar
 import java.util.regex.Pattern
 
 fun checkPasswordStrength(input: String): Pair<String, Color> {
@@ -101,126 +102,130 @@ fun PasswordTest(navController: NavController) {
             backgroundColor = color
         }
     }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF1C2431))
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        // Top Bar with Back Button
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.arrow),
-                contentDescription = "Back",
-                modifier = Modifier
-                    .size(30.dp)
-                    .clickable { navController.navigate(Screen.ToolsMenu.route) }
+    androidx.compose.material3.Scaffold(
+        bottomBar = {
+            BottomNavigationBar(
+                navController = navController,
+                selectedScreen = Screen.PasswordTest.route
             )
-            Spacer(modifier = Modifier.weight(0.69f))
-            Text(
-                "Password Test",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            Spacer(modifier = Modifier.weight(1f))
         }
-
-        Spacer(modifier = Modifier.height(20.dp))
-        Image(
-            painter = painterResource(id = R.drawable.line),
-            contentDescription = "line",
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .size(width = 300.dp, height = 4.dp)
-        )
+    ) { innerPadding ->
 
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 100.dp, horizontal = 10.dp),
+                .fillMaxSize()
+                .background(Color(0xFF1C2431))
+                .padding(innerPadding)
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .background(Color.LightGray, shape = RoundedCornerShape(16.dp))
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = passwordStrength,
-                    style = TextStyle(fontSize = 16.sp, color = Color.Black),
-                    modifier = Modifier.align(Alignment.Center),
-                    textAlign = TextAlign.Center,
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
+            // Top Bar with Back Button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Gray, shape = RoundedCornerShape(12.dp))
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextField(
-                    value = password,
-                    onValueChange = { newPassword ->
-                        password = newPassword
-                        val (strength, color) = checkPasswordStrength(newPassword)
+                Image(
+                    painter = painterResource(id = R.drawable.arrow),
+                    contentDescription = "Back",
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clickable { navController.navigate(Screen.ToolsMenu.route) }
+                )
+                Spacer(modifier = Modifier.weight(0.69f))
+                Text(
+                    "Password Test",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.weight(1f))
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+            androidx.compose.material3.Divider(color = Color.Gray.copy(alpha = 0.5f))
+
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 100.dp, horizontal = 10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .background(Color.LightGray, shape = RoundedCornerShape(16.dp))
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = passwordStrength,
+                        style = TextStyle(fontSize = 16.sp, color = Color.Black),
+                        modifier = Modifier.align(Alignment.Center),
+                        textAlign = TextAlign.Center,
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.Gray, shape = RoundedCornerShape(12.dp))
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextField(
+                        value = password,
+                        onValueChange = { newPassword ->
+                            password = newPassword
+                            val (strength, color) = checkPasswordStrength(newPassword)
+                            passwordStrength = strength
+                            backgroundColor = color
+                        },
+                        singleLine = true,
+                        modifier = Modifier.weight(1f),
+                        colors = TextFieldDefaults.textFieldColors(
+                            backgroundColor = Color.Transparent,
+                            textColor = Color.White
+                        )
+                    )
+                    IconButton(onClick = {
+                        pasteFromClipboard(context)?.let { clipboardContent ->
+                            password = clipboardContent
+                            val (strength, color) = checkPasswordStrength(clipboardContent)
+                            passwordStrength = strength
+                            backgroundColor = color
+                        }
+                    }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.clipboard),
+                            contentDescription = "Paste",
+                            tint = Color.White
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        val (strength, color) = checkPasswordStrength(password)
                         passwordStrength = strength
                         backgroundColor = color
                     },
-                    singleLine = true,
-                    modifier = Modifier.weight(1f),
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.Transparent,
-                        textColor = Color.White
-                    )
-                )
-                IconButton(onClick = {
-                    pasteFromClipboard(context)?.let { clipboardContent ->
-                        password = clipboardContent
-                        val (strength, color) = checkPasswordStrength(clipboardContent)
-                        passwordStrength = strength
-                        backgroundColor = color
-                    }
-                }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.clipboard),
-                        contentDescription = "Paste",
-                        tint = Color.White
-                    )
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Text("Test", color = Color.Black)
                 }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = {
-                    val (strength, color) = checkPasswordStrength(password)
-                    passwordStrength = strength
-                    backgroundColor = color
-                },
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.padding(8.dp)
-            ) {
-                Text("Test", color = Color.Black)
             }
         }
     }
 }
-
 @Preview(showBackground = true)
 @Composable
 fun PasswordTestPreview() {

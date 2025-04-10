@@ -2,6 +2,7 @@ package com.example.project1.settings.terms
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.project1.R
+import com.example.project1.home.BottomNavigationBar
 
 @Composable
 fun TermsScreen(
@@ -33,57 +35,54 @@ fun TermsScreen(
     val scrollState = rememberScrollState()
     val headTextPadd =  (LocalConfiguration.current.screenWidthDp)/10
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(darkNavy)
-    ) {
+    androidx.compose.material3.Scaffold(
+        bottomBar = {
+            BottomNavigationBar(
+                navController = navController,
+                selectedScreen = Screen.Terms.route
+            )
+        }
+    ) { innerPadding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Color(0xFF1C2431))
                 .verticalScroll(scrollState)
-                .padding(16.dp)
+                .padding(innerPadding)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Header
+            // Top Bar with Back Button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp, bottom = 8.dp),
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { navController.navigateUp() }) {
-                    Icon(
-                        painter = painterResource(R.drawable.arrow),
-                        contentDescription = "Back",
-                        tint = Color.White
-                    )
-                }
-
-                Column(
-                    modifier = Modifier.padding(start = headTextPadd.dp)
-                ) {
-                    Text(
-                        text = "Terms and Policies",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    Text(
-                        text = "Last updated on 12/12/2024",
-                        fontSize = 12.sp,
-                        color = Color.Gray
-                    )
-                }
+                Image(
+                    painter = painterResource(id = R.drawable.arrow),
+                    contentDescription = "Back",
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clickable { navController.navigate(Screen.Settings.route) }
+                )
+                Spacer(modifier = Modifier.weight(0.69f))
+                androidx.compose.material.Text(
+                    "Terms and Policies",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.weight(1f))
             }
-            Image(
-                painter = painterResource(id = R.drawable.line),
-                contentDescription = "line",
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .size(width = 300.dp, height = 4.dp)
-            )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            androidx.compose.material3.Divider(color = Color.Gray.copy(alpha = 0.5f))
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Purpose Section
             PolicySection(
