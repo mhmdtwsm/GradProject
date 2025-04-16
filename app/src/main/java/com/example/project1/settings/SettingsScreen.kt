@@ -1,5 +1,6 @@
 package com.example.project1.settings
 
+import Screen
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -71,7 +72,7 @@ fun SettingsScreen(navController: NavController) {
             SettingsItem(
                 icon = Icons.Default.Person,
                 title = "Edit profile",
-                onClick = { /** TODO Handle edit profile action **/ }
+                onClick = { navController.navigate(Screen.Profile.route) }
             )
             SettingsItem(
                 icon = Icons.Default.Info,

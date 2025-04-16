@@ -23,7 +23,6 @@ import com.example.project1.R
 
 @Composable
 fun BottomNavigationBar(navController: NavController, selectedScreen: String, txtSize: Int = 10) {
-
     BottomNavigation(
         backgroundColor = Color(0xFF1C2431),
         contentColor = Color.White,
@@ -31,6 +30,19 @@ fun BottomNavigationBar(navController: NavController, selectedScreen: String, tx
             .padding(vertical = 10.dp)
             .zIndex(1f)
     ) {
+
+        fun navigateIfNotCurrent(route: String) {
+            if (selectedScreen != route) {
+                navController.navigate(route) {
+                    launchSingleTop = true
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                    restoreState = true
+                }
+            }
+        }
+
         BottomNavigationItem(
             icon = {
                 Icon(
@@ -46,10 +58,12 @@ fun BottomNavigationBar(navController: NavController, selectedScreen: String, tx
                     text = "Home",
                     fontSize = txtSize.sp
                 )
-            }, selected = selectedScreen == Screen.Home.route,
+            },
+            selected = selectedScreen == Screen.Home.route,
             modifier = Modifier.padding(vertical = 5.dp),
-            onClick = { navController.navigate(Screen.Home.route) }
+            onClick = { navigateIfNotCurrent(Screen.Home.route) }
         )
+
         BottomNavigationItem(
             icon = {
                 Icon(
@@ -68,10 +82,9 @@ fun BottomNavigationBar(navController: NavController, selectedScreen: String, tx
             },
             selected = selectedScreen == Screen.URL.route,
             modifier = Modifier.padding(vertical = 5.dp),
-            onClick = {
-                navController.navigate(Screen.URL.route)
-            }
+            onClick = { navigateIfNotCurrent(Screen.URL.route) }
         )
+
         BottomNavigationItem(
             icon = {
                 Icon(
@@ -87,12 +100,12 @@ fun BottomNavigationBar(navController: NavController, selectedScreen: String, tx
                     text = "SMS",
                     fontSize = txtSize.sp
                 )
-            }, selected = selectedScreen == Screen.SMS.route,
+            },
+            selected = selectedScreen == Screen.SMS.route,
             modifier = Modifier.padding(vertical = 5.dp),
-            onClick = {
-                navController.navigate(Screen.SMS.route)
-            }
+            onClick = { navigateIfNotCurrent(Screen.SMS.route) }
         )
+
         BottomNavigationItem(
             icon = {
                 Icon(
@@ -106,14 +119,14 @@ fun BottomNavigationBar(navController: NavController, selectedScreen: String, tx
                 Text(
                     text = "Tools",
                     fontSize = txtSize.sp,
-                    fontWeight = FontWeight.Bold,
-
-                    )
+                    fontWeight = FontWeight.Bold
+                )
             },
             selected = selectedScreen == Screen.ToolsMenu.route,
             modifier = Modifier.padding(vertical = 5.dp),
-            onClick = { navController.navigate(Screen.ToolsMenu.route) }
+            onClick = { navigateIfNotCurrent(Screen.ToolsMenu.route) }
         )
+
         BottomNavigationItem(
             icon = {
                 Icon(
@@ -127,13 +140,12 @@ fun BottomNavigationBar(navController: NavController, selectedScreen: String, tx
                 Text(
                     text = "Settings",
                     fontSize = txtSize.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Bold
                 )
-            }, selected = selectedScreen == Screen.Settings.route,
+            },
+            selected = selectedScreen == Screen.Settings.route,
             modifier = Modifier.padding(vertical = 5.dp),
-            onClick = {
-                navController.navigate(Screen.Settings.route)
-            }
+            onClick = { navigateIfNotCurrent(Screen.Settings.route) }
         )
     }
 }

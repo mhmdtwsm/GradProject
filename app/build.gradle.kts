@@ -52,6 +52,16 @@ dependencies {
     implementation("androidx.compose.material:material:1.4.0")
     implementation("androidx.compose.ui:ui-tooling-preview:1.4.0")
 
+    // Datastore
+    implementation("androidx.datastore:datastore-preferences:1.1.4")
+
+    // Request Handling
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation("org.json:json:20210307")
+
+    // Image Coil Library
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -62,6 +72,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.firebase.auth)
     implementation(libs.androidx.lifecycle.service)
+    implementation(libs.androidx.preference.ktx)
+    implementation(libs.volley)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

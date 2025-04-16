@@ -6,55 +6,72 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.View
-import android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.remember
 import androidx.core.view.WindowCompat
-
+import androidx.lifecycle.lifecycleScope
+import com.example.project1.DataStoreManager
 import com.example.project1.service.ClipboardService
 import com.example.project1.ui.theme.Project1Theme
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-    private var startDestination = Screen.Home.route
-    private var autoScan: Boolean = false
 
-    // Permission launcher for notification permission
-    private val requestPermissionLauncher = registerForActivityResult(
+    private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
-        if (isGranted) {
-            startClipboardService()
-        }
+        if (isGranted) startClipboardService()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        hideSystemNavigationBar()
+        configureEdgeToEdge()
 
-        // Check if we should navigate to URL scan
-        when (intent?.action) {
-            "OPEN_PASSWORD_TEST" -> startDestination = Screen.PasswordTest.route
-            "OPEN_URL_SCAN" -> {
-                startDestination = Screen.URL.route
-                autoScan = intent.getBooleanExtra("AUTO_SCAN", false)
+        lifecycleScope.launch {
+            // Initialize navigation state
+            val (startDestination, autoScan) = determineInitialDestination()
+
+            setContent {
+                Project1Theme {
+                    val rememberedAutoScan = remember { autoScan }
+                    AppNavigation(
+                        startDestination = startDestination,
+                        autoScan = rememberedAutoScan
+                    )
+                }
             }
         }
 
-        // Request notification permission for Android 13+ at app start
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        } else {
-            startClipboardService()
-        }
+        handleNotificationPermission()
+    }
 
-        setContent {
-            Project1Theme {
-                AppNavigation(
-                    startDestination = startDestination,
-                    autoScan = autoScan
-                )
+    private suspend fun determineInitialDestination(): Pair<String, Boolean> {
+        // Check for deep links first
+        return when (intent?.action) {
+            "OPEN_PASSWORD_TEST" -> Screen.PasswordTest.route to false
+            "OPEN_URL_SCAN" -> Screen.URL.route to intent.getBooleanExtra("AUTO_SCAN", false)
+            else -> {
+                // Default navigation flow
+                val isOnboardingCompleted = DataStoreManager
+                    .isOnboardingCompleted(applicationContext)
+                    .first()
+
+                if (isOnboardingCompleted) Screen.Home.route to false
+                else Screen.Onboarding.route to false
             }
+        }
+    }
+
+    private fun handleNotificationPermission() {
+        when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+
+            else -> startClipboardService()
         }
     }
 
@@ -68,19 +85,19 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun hideSystemNavigationBar() {
+    private fun configureEdgeToEdge() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // Modern approach for Android 11+
-            WindowCompat.setDecorFitsSystemWindows(window, false)
             window.decorView.windowInsetsController?.let { controller ->
                 controller.hide(android.view.WindowInsets.Type.navigationBars())
                 controller.systemBarsBehavior =
                     android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
         } else {
-            // Legacy approach for older Android versions
+            @Suppress("DEPRECATION")
             window.decorView.systemUiVisibility = (
-                    SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
                             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
                             View.SYSTEM_UI_FLAG_FULLSCREEN
                     )
@@ -89,10 +106,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) {
-            // Re-hide the navigation bar when the window gains focus
-            hideSystemNavigationBar()
-        }
+        if (hasFocus) configureEdgeToEdge()
     }
 }
-

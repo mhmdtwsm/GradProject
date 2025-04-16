@@ -1,4 +1,4 @@
-package com.example.project1.register
+package com.example.project1.authentication.login
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border

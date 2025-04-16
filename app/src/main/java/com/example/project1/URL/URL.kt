@@ -19,10 +19,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.project1.home.BottomNavigationBar
 import com.example.project1.viewmodel.URLViewModel
 
@@ -314,4 +316,3 @@ private fun scanUrl(url: String, viewModel: URLViewModel, onResult: (String) -> 
         onResult("ERROR")
     }
 }
-
