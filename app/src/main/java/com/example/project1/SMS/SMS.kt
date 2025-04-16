@@ -191,18 +191,7 @@ fun SMSHistoryCard(smsItem: SMSHistoryItem) {
                 fontSize = 14.sp,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-
-            // Add some placeholder lines for visual effect
-            repeat(3) {
-                Divider(
-                    color = Color.Gray,
-                    thickness = 1.dp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 2.dp)
-                )
-            }
-
+            
             // Status indicator
             Box(
                 modifier = Modifier

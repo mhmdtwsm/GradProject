@@ -238,9 +238,9 @@ fun AppNavigation(
                 onNavigateToPasswordChange = {
                     navController.navigate(Screen.ResetPassword.route)
                 },
-                onNavigateBack = {
-                    navController.popBackStack()
-                })
+                navController = navController,
+                viewModel = viewModel()
+            )
         }
 
         // Tools Menu

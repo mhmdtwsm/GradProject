@@ -15,4 +15,11 @@
     <files-path
         name="files"
         path="." />
+    <files-path
+        name="profile_images"
+        path="." />
+    <cache-path
+        name="temp_images"
+        path="." />
+
 </paths>

@@ -74,14 +74,10 @@ fun SettingsScreen(navController: NavController) {
                 title = "Edit profile",
                 onClick = { navController.navigate(Screen.Profile.route) }
             )
+
             SettingsItem(
-                icon = Icons.Default.Info,
-                title = "Security & Privacy",
-                onClick = { /** TODO Handle security & privacy action **/ }
-            )
-            SettingsItem(
-                icon = Icons.Default.Notifications,
-                title = "Notifications & Overlay",
+                icon = Icons.Default.Warning,
+                title = "Permissions",
                 onClick = { /** TODO Handle notifications & overlay action **/ }
             )
 
