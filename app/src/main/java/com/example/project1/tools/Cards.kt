@@ -41,14 +41,14 @@ fun Cards(iconId: Int, title: String, onClick: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp)
-                .border(3.dp, Color.Gray, RoundedCornerShape(12.dp)),
+                .border(1.dp, Color.White, RoundedCornerShape(12.dp)),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
+            horizontalArrangement = Arrangement.Start,
         ) {
             Icon(
                 painter = painterResource(id = iconId),
                 contentDescription = "$title",
-                tint = Color.White,
+                tint = Color.Gray,
                 modifier = Modifier
                     .size(70.dp)
                     .padding(vertical = 10.dp),
@@ -56,8 +56,8 @@ fun Cards(iconId: Int, title: String, onClick: () -> Unit) {
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = "$title",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Normal,
                 color = Color.White,
                 modifier = Modifier
             )

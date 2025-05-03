@@ -71,24 +71,24 @@ fun HomeScreen(navController: NavController, message: String? = null) {
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Warning Box
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-                    .background(Color.Transparent, RoundedCornerShape(10.dp))
-                    .border(1.dp, Color.Gray, RoundedCornerShape(10.dp))
-                    .padding(12.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Always verify links before sharing your info.",
-                    fontSize = 16.sp,
-                    color = Color.White
-                )
-            }
+//            // Warning Box
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(8.dp)
+//                    .background(Color.Transparent, RoundedCornerShape(10.dp))
+//                    .border(1.dp, Color.Gray, RoundedCornerShape(10.dp))
+//                    .padding(12.dp),
+//                contentAlignment = Alignment.Center
+//            ) {
+//                Text(
+//                    text = "Always verify links before sharing your info.",
+//                    fontSize = 16.sp,
+//                    color = Color.White
+//                )
+//            }
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             // Buttons Grid
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -116,7 +116,7 @@ fun HomeScreen(navController: NavController, message: String? = null) {
                     })
                     Spacer(modifier = Modifier.width(16.dp)) // Add spacing between buttons()
                     HomeButtons("Learn & Protect", R.drawable.ic_education, onClick = {
-
+                        navController.navigate(Screen.SecurityTips.route)
                     })
                 }
             }

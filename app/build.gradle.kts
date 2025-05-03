@@ -1,3 +1,5 @@
+import org.gradle.api.JavaVersion
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,6 +8,7 @@ plugins {
 }
 
 android {
+
     namespace = "com.example.project1"
     compileSdk = 35
 
@@ -17,6 +20,14 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        packaging {
+            resources {
+                excludes += "META-INF/INDEX.LIST"
+                excludes += "META-INF/DEPENDENCIES"
+                excludes += "META-INF/io.netty.versions.properties"
+            }
+        }
     }
 
     buildTypes {
@@ -38,9 +49,20 @@ android {
     buildFeatures {
         compose = true
     }
+
+
 }
 
 dependencies {
+    // Retrofit for network calls
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
+    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+
+    // Moshi for JSON parsing
+    implementation("com.squareup.moshi:moshi:1.13.0")
+    implementation("com.squareup.moshi:moshi-kotlin:1.13.0")
+    implementation("com.squareup.moshi:moshi-kotlin-codegen:1.13.0")
 
     //  Splash Screen
     implementation(libs.androidx.core.splashscreen)
@@ -62,6 +84,33 @@ dependencies {
     // Image Coil Library
     implementation("io.coil-kt:coil-compose:2.4.0")
 
+    // kotlinx.serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+
+    // Annotation processor for kotlinx.serialization
+    implementation("org.jetbrains.kotlin:kotlin-serialization:1.8.21")
+
+
+    // Camera X dependencies
+
+    implementation("androidx.camera:camera-core:1.2.3")
+    implementation("androidx.camera:camera-camera2:1.2.3")
+    implementation("androidx.camera:camera-lifecycle:1.2.3")
+    implementation("androidx.camera:camera-view:1.2.3")
+
+    // ML Kit for barcode scanning
+    implementation("com.google.mlkit:barcode-scanning:17.1.0")
+
+    // For permissions handling
+    implementation("androidx.activity:activity-compose:1.7.2")
+
+    // Add Guava to resolve ListenableFuture conflicts
+    implementation("com.google.guava:guava:31.1-android")
+
+    // Add multidex support
+    implementation("androidx.multidex:multidex:2.0.1")
+
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -74,6 +123,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.service)
     implementation(libs.androidx.preference.ktx)
     implementation(libs.volley)
+    implementation(libs.firebase.appdistribution.gradle)
+    implementation(libs.play.services.vision)
+    implementation(libs.barcode.scanning.common)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

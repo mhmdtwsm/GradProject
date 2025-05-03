@@ -63,5 +63,10 @@ class URLRepository(context: Context) {
             timestamp = cursor.getLong(timestampIndex)
         )
     }
+
+    suspend fun clearAll() = withContext(Dispatchers.IO) {
+        val db = database.writableDatabase
+        db.delete(URLDatabase.TABLE_URL_HISTORY, null, null)
+    }
 }
 

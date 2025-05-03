@@ -1,6 +1,7 @@
 // EditProfileScreen.kt
 package com.example.project1.settings.profile
 
+import android.content.Context
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -38,6 +39,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,6 +60,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.example.project1.DataStoreManager
 import com.example.project1.R
 import com.example.project1.authentication.CommonComponents.StandardTextField
 import com.example.project1.viewmodel.EditProfileViewModel
@@ -218,31 +222,42 @@ fun EditProfileScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             // Save Button
-            Button(
-                onClick = {
-                    viewModel.updateProfile(context)
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF76808A)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                enabled = !viewModel.isLoading
-            ) {
-                if (viewModel.isLoading) {
-                    CircularProgressIndicator(
-                        color = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                } else {
-                    Text(
-                        text = "Save changes",
-                        fontSize = 16.sp,
-                        color = Color.White,
-                    )
-                }
-            }
+            SaveButton(viewModel, context)
 
             Spacer(modifier = Modifier.height(20.dp))
+        }
+    }
+}
+
+@Composable
+fun SaveButton(viewModel: EditProfileViewModel, context: Context) {
+    val savedUsername by DataStoreManager.getUsername(context).collectAsState(initial = "")
+
+    val isButtonEnabled = !viewModel.isLoading &&
+            viewModel.username.isNotBlank() &&
+            viewModel.username != savedUsername
+
+    Button(
+        onClick = {
+            viewModel.updateProfile(context)
+        },
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF76808A)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp),
+        enabled = isButtonEnabled
+    ) {
+        if (viewModel.isLoading) {
+            CircularProgressIndicator(
+                color = Color.White,
+                modifier = Modifier.size(24.dp)
+            )
+        } else {
+            Text(
+                text = if (isButtonEnabled) "Save changes" else "",
+                fontSize = 16.sp,
+                color = Color.White,
+            )
         }
     }
 }

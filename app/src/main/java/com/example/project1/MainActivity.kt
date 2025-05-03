@@ -49,16 +49,20 @@ class MainActivity : ComponentActivity() {
     }
 
     private suspend fun determineInitialDestination(): Pair<String, Boolean> {
-        // Check for deep links first
-        return when (intent?.action) {
-            "OPEN_PASSWORD_TEST" -> Screen.PasswordTest.route to false
-            "OPEN_URL_SCAN" -> Screen.URL.route to intent.getBooleanExtra("AUTO_SCAN", false)
-            else -> {
-                // Default navigation flow
-                val isOnboardingCompleted = DataStoreManager
-                    .isOnboardingCompleted(applicationContext)
-                    .first()
+        val isOnboardingCompleted = DataStoreManager
+            .isOnboardingCompleted(applicationContext)
+            .first()
 
+        return when (intent?.action) {
+            "OPEN_URL_SCAN" -> {
+                if (isOnboardingCompleted) {
+                    Screen.URL.route to intent.getBooleanExtra("AUTO_SCAN", false)
+                } else {
+                    Screen.Onboarding.route to false
+                }
+            }
+
+            else -> {
                 if (isOnboardingCompleted) Screen.Home.route to false
                 else Screen.Onboarding.route to false
             }

@@ -74,4 +74,10 @@ class SMSRepository(context: Context) {
             timestamp = cursor.getLong(timestampIndex)
         )
     }
+
+    suspend fun clearAll() = withContext(Dispatchers.IO) {
+        val db = database.writableDatabase
+        db.delete(SMSDatabase.TABLE_SMS_HISTORY, null, null)
+    }
+    
 }

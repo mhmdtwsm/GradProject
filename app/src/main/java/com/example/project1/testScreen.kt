@@ -21,7 +21,7 @@ import androidx.navigation.NavController
 import com.example.project1.home.BottomNavigationBar
 
 @Composable
-fun SMSScreen() {
+fun SMSScreenS() {
     var messageText by remember { mutableStateOf("") }
     val context = LocalContext.current
 
@@ -120,10 +120,4 @@ fun SMSScreen() {
         Spacer(modifier = Modifier.weight(1f))
 
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewSMSScreen() {
-    SMSScreen()
 }

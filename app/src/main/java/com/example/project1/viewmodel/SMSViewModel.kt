@@ -1,17 +1,19 @@
 package com.example.project1.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.project1.SMS.SMSData.SMSHistoryItem
 import com.example.project1.SMS.SMSData.SMSRepository
+import com.example.project1.SMS.SMSNetworkRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.io.IOException
 
 class SMSViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = SMSRepository(application)
+    private val networkRepository = SMSNetworkRepository()
 
     private val _smsText = MutableStateFlow("")
     val smsText: StateFlow<String> = _smsText
@@ -49,20 +51,20 @@ class SMSViewModel(application: Application) : AndroidViewModel(application) {
             // Clear the input field
             _smsText.value = ""
 
-            try {
-                // Simulate server request
-                // In a real app, you would make an API call to your server here
-                val serverResponse = checkWithServer(message)
+            networkRepository.checkSMSSafety(message).fold(
+                onSuccess = { isSafe ->
+                    repository.saveSMS(message, isSafe)
+                    Log.d("SMSViewModel", "SMS check result: ${if (isSafe) "Safe" else "Unsafe"}")
+                },
+                onFailure = { error ->
+                    repository.saveSMS(message, null)
+                    val errorMsg = error.message ?: "Unknown network error"
+                    Log.e("SMSViewModel", "Failed to check SMS: $errorMsg")
+                    // Optionally show error to user
+                }
+            )
 
-                // Save to database with server response
-                repository.saveSMS(message, serverResponse)
-            } catch (e: IOException) {
-                // Handle connection error - save with null safety status
-                // We'll use a third state (null) to represent "No connection"
-                repository.saveSMS(message, null)
-            }
-
-            // Reload messages
+            // Reload messages after saving
             loadRecentSMS()
 
             _isLoading.value = false
@@ -71,18 +73,5 @@ class SMSViewModel(application: Application) : AndroidViewModel(application) {
 
     fun pasteFromClipboard(text: String) {
         _smsText.value = text
-    }
-
-    // This is just a simulation - replace with actual API call
-    private suspend fun checkWithServer(message: String): Boolean {
-        kotlinx.coroutines.delay(500) // Simulate network delay
-
-        // Simulate network error sometimes
-        if (Math.random() < 0.2) {
-            throw IOException("Network error")
-        }
-
-        // Simple simulation: messages with "safe" are considered safe
-        return message.contains("safe", ignoreCase = true)
     }
 }

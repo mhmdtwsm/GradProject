@@ -17,10 +17,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.project1.SMS.SMSData.SMSHistoryItem
 import com.example.project1.home.BottomNavigationBar
 //import com.example.project1.home.Screen
@@ -79,7 +81,7 @@ fun SMSScreen(navController: NavController) {
                     }
                 }
             )
-
+            Spacer(modifier = Modifier.height(24.dp))
             // Check Button
             Button(
                 onClick = { viewModel.checkSMS() },
@@ -163,7 +165,7 @@ fun SMSInputField(
                 modifier = Modifier.size(48.dp)
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_link), // Using link icon as clipboard
+                    painter = painterResource(id = R.drawable.clipboard), // Using link icon as clipboard
                     contentDescription = "Paste from clipboard",
                     tint = Color.Gray
                 )
@@ -191,7 +193,7 @@ fun SMSHistoryCard(smsItem: SMSHistoryItem) {
                 fontSize = 14.sp,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            
+
             // Status indicator
             Box(
                 modifier = Modifier
@@ -215,4 +217,10 @@ fun SMSHistoryCard(smsItem: SMSHistoryItem) {
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SMSPreview() {
+    SMSScreen(navController = rememberNavController())
 }

@@ -1,6 +1,8 @@
 package com.example.project1.settings
 
 import Screen
+import android.app.Activity
+import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -26,9 +28,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.datastore.preferences.core.edit
 import androidx.navigation.NavController
+import androidx.preference.PreferenceManager
+import com.example.project1.DataStoreManager.ONBOARDING_KEY
+import com.example.project1.DataStoreManager.USERNAME_KEY
 import com.example.project1.R
+import com.example.project1.SMS.SMSData.SMSRepository
+import com.example.project1.URL.URLData.URLRepository
+import com.example.project1.dataStore
 import com.example.project1.home.BottomNavigationBar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 
 @Composable
 fun SettingsScreen(navController: NavController) {
@@ -84,27 +99,9 @@ fun SettingsScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(24.dp))
 
             // Theme Section
-            SectionTitle("Theme")
+//            SectionTitle("Theme")
+//            ThemeSwitch(darkModeEnabled = darkModeEnabled)
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "Dark Mode", fontSize = 16.sp, color = Color.White)
-                Switch(
-                    checked = darkModeEnabled.value,
-                    onCheckedChange = { darkModeEnabled.value = it },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = Color(0xFF3D5AFE),
-                        uncheckedThumbColor = Color.White,
-                        uncheckedTrackColor = Color.Gray
-                    )
-                )
-            }
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 16.dp),
@@ -132,14 +129,13 @@ fun SettingsScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(24.dp))
 
             // Language Section
-            SectionTitle("Language")
-
-            LanguageSelector()
+//            SectionTitle("Language")
+//            LanguageSelector()
 
             Spacer(modifier = Modifier.height(32.dp))
 
             // Sign Out Button
-            SignOutButton({ /** TODO Handle sign out action **/ })
+            SignOutButton(context = LocalContext.current)
 
             Spacer(modifier = Modifier.height(32.dp)) // Extra space to prevent UI cutoff
         }
@@ -185,12 +181,14 @@ fun LanguageSelector() {
 }
 
 @Composable
-fun SignOutButton(onSignOut: () -> Unit) {
+fun SignOutButton(context: Context) {
     val darkNavy = Color(0xFF1C2431)
 
     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         Button(
-            onClick = onSignOut,
+            onClick = {
+                signOutUser(context = context)
+            },
             modifier = Modifier
                 .width(200.dp)
                 .height(48.dp),
@@ -215,6 +213,30 @@ fun SignOutButton(onSignOut: () -> Unit) {
             }
         }
     }
+}
+
+@Composable
+fun ThemeSwitch(darkModeEnabled: MutableState<Boolean>) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = "Dark Mode", fontSize = 16.sp, color = Color.White)
+        Switch(
+            checked = darkModeEnabled.value,
+            onCheckedChange = { darkModeEnabled.value = it },
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = Color(0xFF3D5AFE),
+                uncheckedThumbColor = Color.White,
+                uncheckedTrackColor = Color.Gray
+            )
+        )
+    }
+
 }
 
 
@@ -247,6 +269,44 @@ fun SettingsItem(
         )
     }
 }
+
+fun signOutUser(context: Context) {
+    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+
+    // 1. Clear SharedPreferences
+    prefs.edit()
+        .remove("AUTH_TOKEN")
+        .remove("VERIFY_EMAIL")
+        .remove("PROFILE_PICTURE_URI")
+        .remove("PROFILE_PICTURE_TIMESTAMP")
+        .apply()
+
+    // 2. Clear DataStore & onboarding status
+    CoroutineScope(Dispatchers.IO).launch {
+        context.dataStore.edit { preferences ->
+            preferences.remove(USERNAME_KEY)
+            preferences[ONBOARDING_KEY] = false
+        }
+
+        // 3. Delete profile picture file
+        val fileName = "profile_picture.jpg"
+        val imageFile = File(context.filesDir, fileName)
+        if (imageFile.exists()) {
+            imageFile.delete()
+        }
+
+        // 4. Close the app after a short delay (optional safety)
+        delay(300) // Let things finish
+        withContext(Dispatchers.Main) {
+            (context as? Activity)?.finishAffinity()
+        }
+
+        // Clear local databases
+        URLRepository(context).clearAll()
+        SMSRepository(context).clearAll()
+    }
+}
+
 
 @Preview(showBackground = true)
 @Composable

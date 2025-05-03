@@ -2,6 +2,7 @@ package com.example.project1
 
 import android.content.ClipboardManager
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,11 +23,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.project1.home.BottomNavigationBar
+import com.example.project1.qrscanner.QRCodeScannerScreen
+import com.example.project1.viewmodel.ScanResult
 import com.example.project1.viewmodel.URLViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,8 +42,11 @@ fun URLScreen(
 ) {
     val context = LocalContext.current
     val urlText = remember { mutableStateOf("") }
-    val scanStatus = remember { mutableStateOf<String?>(null) }
+    val scanResult by viewModel.scanResult.collectAsState()
     val urlHistory by viewModel.urlHistory.collectAsState(initial = emptyList())
+
+    // State to control showing the QR scanner
+    var showQrScanner by remember { mutableStateOf(false) }
 
     // Load history when the screen is first displayed
     LaunchedEffect(key1 = true) {
@@ -74,10 +82,7 @@ fun URLScreen(
 
                         // Scan the URL
                         println("Scanning URL: ${urlText.value}")
-                        scanUrl(clipboardContent, viewModel) { result ->
-                            scanStatus.value = result
-                            println("Scan result: $result")
-                        }
+                        viewModel.scanUrl(clipboardContent)
                     } else {
                         println("Clipboard content does not start with http")
                     }
@@ -91,193 +96,266 @@ fun URLScreen(
         }
     }
 
-    Scaffold(
-        bottomBar = {
-            BottomNavigationBar(
-                navController = navController,
-                selectedScreen = Screen.URL.route
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFF1C2431)) // Dark blue background
-                .padding(innerPadding)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "URL Scan",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                modifier = Modifier.padding(vertical = 16.dp)
-            )
+    // Show QR Scanner if activated
+    if (showQrScanner) {
+        QRCodeScannerScreen(
+            onUrlDetected = { detectedUrl ->
+                // Update the text field with detected URL
+                urlText.value = detectedUrl
 
-            Divider(color = Color.Gray.copy(alpha = 0.5f))
+                // Scan the URL
+                viewModel.scanUrl(detectedUrl)
 
-            Spacer(modifier = Modifier.height(24.dp))
+                // Close the scanner
+                showQrScanner = false
+            },
+            onClose = {
+                // Close the scanner without scanning
+                showQrScanner = false
+            }
+        )
+    } else {
+        // Show regular URL screen
+        Scaffold(
+            bottomBar = {
+                BottomNavigationBar(
+                    navController = navController,
+                    selectedScreen = Screen.URL.route
+                )
+            }
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFF1C2431)) // Dark blue background
+                    .padding(innerPadding)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "URL Scan",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
 
-            // Status indicator
-            if (scanStatus.value != null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .clip(RoundedCornerShape(25.dp))
-                        .background(Color.Gray.copy(alpha = 0.5f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = scanStatus.value ?: "",
-                        color = if (scanStatus.value == "SAFE") Color.Green else Color.Red,
-                        fontWeight = FontWeight.Bold
-                    )
+                Divider(color = Color.Gray.copy(alpha = 0.5f))
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Status indicator
+                when (val result = scanResult) {
+                    is ScanResult.Loading -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .clip(RoundedCornerShape(25.dp))
+                                .background(Color.Gray.copy(alpha = 0.5f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = Color.White)
+                        }
+                    }
+
+                    is ScanResult.Safe -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .clip(RoundedCornerShape(25.dp))
+                                .background(Color.Gray.copy(alpha = 0.5f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "SAFE",
+                                color = Color.Green,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    is ScanResult.Unsafe -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .clip(RoundedCornerShape(25.dp))
+                                .background(Color.Gray.copy(alpha = 0.5f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "UNSAFE",
+                                color = Color.Red,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    is ScanResult.Error -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .clip(RoundedCornerShape(25.dp))
+                                .background(Color.Gray.copy(alpha = 0.5f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "ERROR: ${result.message}",
+                                color = Color.Red,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    null -> {
+                        // Show nothing if no scan has been performed
+                        Spacer(modifier = Modifier.height(50.dp))
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-            }
 
-            // URL Input field with clipboard and QR code icons
-            OutlinedTextField(
-                value = urlText.value,
-                onValueChange = { urlText.value = it },
-                placeholder = { Text("Enter URL to scan") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(25.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    containerColor = Color.White,
-                    cursorColor = Color.Black,
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent
-                ),
-                trailingIcon = {
-                    Row {
-                        IconButton(onClick = {
-                            // QR code functionality will be implemented later
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = "Scan QR Code",
-                                tint = Color.Black
-                            )
-                        }
-
-                        IconButton(onClick = {
-                            try {
-                                val clipboardText = getClipboardText(context)
-                                println("Clipboard button clicked, content: '$clipboardText'")
-                                if (clipboardText.isNotEmpty()) {
-                                    urlText.value = clipboardText
-                                    println("Set urlText.value from button: ${urlText.value}")
-                                }
-                            } catch (e: Exception) {
-                                println("Error accessing clipboard from button: ${e.message}")
-                                e.printStackTrace()
+                // URL Input field with clipboard and QR code icons
+                OutlinedTextField(
+                    value = urlText.value,
+                    onValueChange = { urlText.value = it },
+                    placeholder = { Text("Enter URL to scan") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(25.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        containerColor = Color.White,
+                        cursorColor = Color.Black,
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent
+                    ),
+                    trailingIcon = {
+                        Row {
+                            IconButton(onClick = {
+                                // Open QR code scanner
+                                showQrScanner = true
+                            }) {
+                                Icon(
+                                    painterResource(id = R.drawable.qr),
+                                    contentDescription = "Scan QR Code",
+                                    tint = Color.Black
+                                )
                             }
-                        }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.clipboard),
-                                contentDescription = "Paste from clipboard",
-                                tint = Color.Black
+
+                            IconButton(onClick = {
+                                try {
+                                    val clipboardText = getClipboardText(context)
+                                    println("Clipboard button clicked, content: '$clipboardText'")
+                                    if (clipboardText.isNotEmpty()) {
+                                        urlText.value = clipboardText
+                                        println("Set urlText.value from button: ${urlText.value}")
+                                    }
+                                } catch (e: Exception) {
+                                    println("Error accessing clipboard from button: ${e.message}")
+                                    e.printStackTrace()
+                                }
+                            }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.clipboard),
+                                    contentDescription = "Paste from clipboard",
+                                    tint = Color.Black
+                                )
+                            }
+                        }
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Check button
+                Button(
+                    onClick = {
+                        if (urlText.value.isNotEmpty()) {
+                            println("Check button clicked, scanning: ${urlText.value}")
+                            viewModel.scanUrl(urlText.value)
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Gray
+                    )
+                ) {
+                    Text(
+                        text = "Check",
+                        color = Color.White,
+                        fontSize = 16.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // History section
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.Gray.copy(alpha = 0.3f)
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    ) {
+                        // History header
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "History",
+                                color = Color.LightGray,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Text(
+                                text = "Status",
+                                color = Color.LightGray,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
                             )
                         }
-                    }
-                }
-            )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
-            // Check button
-            Button(
-                onClick = {
-                    if (urlText.value.isNotEmpty()) {
-                        println("Check button clicked, scanning: ${urlText.value}")
-                        scanUrl(urlText.value, viewModel) { result ->
-                            scanStatus.value = result
-                            println("Scan result from button: $result")
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Gray
-                )
-            ) {
-                Text(
-                    text = "Check",
-                    color = Color.White,
-                    fontSize = 16.sp
-                )
-            }
+                        // History list
+                        LazyColumn {
+                            items(urlHistory) { item ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = item.url,
+                                        color = Color.White,
+                                        fontSize = 14.sp,
+                                        modifier = Modifier.weight(0.7f)
+                                    )
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // History section
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.Gray.copy(alpha = 0.3f)
-                ),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                ) {
-                    // History header
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "History",
-                            color = Color.LightGray,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Text(
-                            text = "Status",
-                            color = Color.LightGray,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // History list
-                    LazyColumn {
-                        items(urlHistory) { item ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = item.url,
-                                    color = Color.White,
-                                    fontSize = 14.sp,
-                                    modifier = Modifier.weight(0.7f)
-                                )
-
-                                Text(
-                                    text = if (item.isSafe) "safe" else "unsafe",
-                                    color = if (item.isSafe) Color.Green else Color.Red,
-                                    fontSize = 14.sp,
-                                    textAlign = TextAlign.End,
-                                    modifier = Modifier.weight(0.3f)
-                                )
+                                    Text(
+                                        text = if (item.isSafe) "safe" else "unsafe",
+                                        color = if (item.isSafe) Color.Green else Color.Red,
+                                        fontSize = 14.sp,
+                                        textAlign = TextAlign.End,
+                                        modifier = Modifier.weight(0.3f)
+                                    )
+                                }
                             }
                         }
                     }
@@ -294,25 +372,5 @@ private fun getClipboardText(context: Context): String {
         clipboard.primaryClip?.getItemAt(0)?.text.toString()
     } else {
         ""
-    }
-}
-
-// Helper function to scan URL
-private fun scanUrl(url: String, viewModel: URLViewModel, onResult: (String) -> Unit) {
-    try {
-        // In a real app, this would call the server
-        // For now, we'll simulate a response
-        val isSafe = !url.contains("malicious") &&
-                !url.contains("phishing") &&
-                !url.contains("fake")
-
-        val result = if (isSafe) "SAFE" else "UNSAFE"
-        onResult(result)
-
-        // Save to history
-        viewModel.saveUrlToHistory(url, isSafe)
-    } catch (e: Exception) {
-        e.printStackTrace()
-        onResult("ERROR")
     }
 }

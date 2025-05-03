@@ -69,6 +69,12 @@ fun ToolsMenu(modifier: Modifier = Modifier, navController: NavController) {
                 title = "Password Generate",
                 onClick = { navController.navigate(Screen.PasswordGenerate.route) })
 
+            Cards(
+                iconId = R.drawable.ic_education,
+                title = "Security Tips",
+                onClick = { navController.navigate(Screen.SecurityTips.route) }
+            )
+
 
         }
     }

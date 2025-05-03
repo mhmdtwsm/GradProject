@@ -24,7 +24,9 @@ import com.example.project1.tools.passwordgenerate.PasswordGenerate
 import com.example.project1.settings.SettingsScreen
 import com.example.project1.settings.help.HelpScreen
 import com.example.project1.authentication.passwordreset.VerifyEmailScreen
+import com.example.project1.authentication.resetpassword.ChangePasswordScreen
 import com.example.project1.settings.profile.EditProfileScreen
+import com.example.project1.tools.tips.SecurityTipsScreen
 
 
 sealed class Screen(val route: String) {
@@ -49,11 +51,13 @@ sealed class Screen(val route: String) {
     object Terms : Screen("terms")
     object Help : Screen("help")
     object Profile : Screen("profile")
+    object ChangePassword : Screen("changePassword")
 
     // Tools Menu Navigations
     object ToolsMenu : Screen("toolsMenu")
     object PasswordTest : Screen("passwordTest")
     object PasswordGenerate : Screen("passwordGenerate")
+    object SecurityTips : Screen("securityTips")
 }
 
 @Composable
@@ -236,11 +240,15 @@ fun AppNavigation(
         composable(Screen.Profile.route) {
             EditProfileScreen(
                 onNavigateToPasswordChange = {
-                    navController.navigate(Screen.ResetPassword.route)
+                    navController.navigate(Screen.ChangePassword.route)
                 },
                 navController = navController,
                 viewModel = viewModel()
             )
+        }
+
+        composable(Screen.ChangePassword.route) {
+            ChangePasswordScreen(navController = navController)
         }
 
         // Tools Menu
@@ -255,5 +263,11 @@ fun AppNavigation(
         composable(Screen.PasswordGenerate.route) {
             PasswordGenerate(navController = navController)
         }
+
+        composable(Screen.SecurityTips.route) {
+            SecurityTipsScreen(navController = navController)
+        }
+
+
     }
 }
