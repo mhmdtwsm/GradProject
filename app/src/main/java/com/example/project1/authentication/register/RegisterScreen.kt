@@ -68,27 +68,19 @@ fun RegisterScreen(
             verticalArrangement = Arrangement.SpaceAround,
         ) {
             Column {
-                Image(
-                    painter = painterResource(id = R.drawable.login),
-                    contentDescription = "",
-                    contentScale = ContentScale.FillHeight,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxWidth(0.25f)
-                        .size(140.dp)
-                )
-
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.height(96.dp))
                 Text(
-                    text = "Register",
+                    text = "Sign Up",
                     fontWeight = FontWeight.Bold,
                     fontSize = 40.sp,
-                    color = Color.White
+                    color = Color.White,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
                 )
 
-                Spacer(modifier = Modifier.height(15.dp))
+                Spacer(modifier = Modifier.height(48.dp))
 
                 // Name TextField
+                Text("Name", color = Color.White, fontSize = 16.sp)
                 StandardTextField(
                     value = viewModel.name,
                     onValueChange = { viewModel.name = it },
@@ -105,6 +97,7 @@ fun RegisterScreen(
 
                 // Email TextField
                 Spacer(modifier = Modifier.height(15.dp))
+                Text("Email", color = Color.White, fontSize = 16.sp)
                 StandardTextField(
                     value = viewModel.email,
                     onValueChange = { viewModel.email = it },
@@ -121,6 +114,7 @@ fun RegisterScreen(
 
                 // Password TextField
                 Spacer(modifier = Modifier.height(15.dp))
+                Text("Password", color = Color.White, fontSize = 16.sp)
                 StandardTextField(
                     value = viewModel.password,
                     onValueChange = { viewModel.password = it },
@@ -149,6 +143,7 @@ fun RegisterScreen(
 
                 // Confirm Password TextField
                 Spacer(modifier = Modifier.height(15.dp))
+                Text("Confirm Password", color = Color.White, fontSize = 16.sp)
                 StandardTextField(
                     value = viewModel.confirmPassword,
                     onValueChange = { viewModel.confirmPassword = it },
@@ -213,7 +208,7 @@ fun RegisterScreen(
                         )
                     } else {
                         Text(
-                            text = "Register",
+                            text = "Sign up",
                             fontSize = 16.sp,
                             color = Color.White,
                         )

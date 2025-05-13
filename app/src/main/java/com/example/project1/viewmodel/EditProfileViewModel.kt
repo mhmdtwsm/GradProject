@@ -24,6 +24,7 @@ class EditProfileViewModel : ViewModel() {
     var email by mutableStateOf("")
     var profilePictureUri by mutableStateOf<Uri?>(null)
     var isLoading by mutableStateOf(false)
+    var isUploadingImage by mutableStateOf(false)
     var errorMessage by mutableStateOf("")
     var successMessage by mutableStateOf("")
 
@@ -124,8 +125,48 @@ class EditProfileViewModel : ViewModel() {
     }
 
     fun setProfilePicture(uri: Uri?) {
-        profilePictureUri = uri
-        Log.d("EditProfile", "Profile picture set to: $uri")
+        uri?.let { newUri ->
+            profilePictureUri = newUri
+            Log.d("EditProfile", "Profile picture set to: $newUri")
+        }
+    }
+
+    // Add a function to upload the profile picture to the server
+    fun uploadProfilePicture(context: Context, uri: Uri) {
+        viewModelScope.launch {
+            isUploadingImage = true
+            errorMessage = ""
+
+            try {
+                when (val result = apiService.uploadProfilePicture(context, uri)) {
+                    is ProfileApiService.ProfileResult.Success -> {
+                        Log.d(
+                            "EditProfile",
+                            "Profile picture uploaded successfully: ${result.message}"
+                        )
+                        successMessage = "Profile picture updated"
+                    }
+
+                    is ProfileApiService.ProfileResult.Error -> {
+                        Log.e("EditProfile", "Failed to upload profile picture: ${result.message}")
+                        errorMessage = "Failed to upload profile picture: ${result.message}"
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("EditProfile", "Exception during profile picture upload", e)
+                errorMessage = "Failed to upload profile picture: ${e.message}"
+            } finally {
+                isUploadingImage = false
+            }
+        }
+    }
+
+    // Modified function to handle both local storage and server upload
+    fun updateProfilePicture(context: Context, uri: Uri?) {
+        if (uri == null) return
+
+        setProfilePicture(uri)
+        uploadProfilePicture(context, uri)
     }
 
     // Add a function to refresh the profile picture

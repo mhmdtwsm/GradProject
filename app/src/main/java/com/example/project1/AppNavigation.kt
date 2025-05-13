@@ -25,6 +25,7 @@ import com.example.project1.settings.SettingsScreen
 import com.example.project1.settings.help.HelpScreen
 import com.example.project1.authentication.passwordreset.VerifyEmailScreen
 import com.example.project1.authentication.resetpassword.ChangePasswordScreen
+import com.example.project1.chat.ChatScreen
 import com.example.project1.settings.profile.EditProfileScreen
 import com.example.project1.tools.tips.SecurityTipsScreen
 
@@ -58,6 +59,7 @@ sealed class Screen(val route: String) {
     object PasswordTest : Screen("passwordTest")
     object PasswordGenerate : Screen("passwordGenerate")
     object SecurityTips : Screen("securityTips")
+    object Chat : Screen("chat")
 }
 
 @Composable
@@ -266,6 +268,10 @@ fun AppNavigation(
 
         composable(Screen.SecurityTips.route) {
             SecurityTipsScreen(navController = navController)
+        }
+
+        composable(Screen.Chat.route) {
+            ChatScreen(navController = navController)
         }
 
 

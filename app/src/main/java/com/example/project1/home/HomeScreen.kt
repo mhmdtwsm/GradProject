@@ -1,11 +1,20 @@
 package com.example.project1.home
 
+import Screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -14,19 +23,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import androidx.preference.PreferenceManager
 import com.example.project1.DataStoreManager
 import com.example.project1.R
-import kotlinx.coroutines.flow.first
+import com.example.project1.statistics.StatisticsManager
+
 
 @Composable
 fun HomeScreen(navController: NavController, message: String? = null) {
@@ -39,6 +48,17 @@ fun HomeScreen(navController: NavController, message: String? = null) {
             userName = savedUsername
         }
     }
+
+    // Variables for testing
+    val emailauth =
+        PreferenceManager.getDefaultSharedPreferences(context).getString("VERIFY_EMAIL", null)
+    val authtoken =
+        PreferenceManager.getDefaultSharedPreferences(context).getString("AUTH_TOKEN", null)
+
+    val statisticsManager = StatisticsManager.getInstance(context)
+    val statsString = statisticsManager.getStatisticsAsString()
+
+
     Scaffold(
         bottomBar = {
             BottomNavigationBar(
@@ -50,12 +70,10 @@ fun HomeScreen(navController: NavController, message: String? = null) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF1C2431)) // Dark background color
+                .background(Color(0xFF1C2431))
                 .padding(innerPadding)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 24.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
             Text(
                 text = if (userName != null) "Hi, $userName" else "",
                 fontSize = 24.sp,
@@ -63,61 +81,86 @@ fun HomeScreen(navController: NavController, message: String? = null) {
                 color = Color.White
             )
 
+            Spacer(modifier = Modifier.height(4.dp))
+
             Text(
                 text = "Welcome to Phishaware!",
                 fontSize = 16.sp,
                 color = Color.LightGray
             )
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
-//            // Warning Box
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(8.dp)
-//                    .background(Color.Transparent, RoundedCornerShape(10.dp))
-//                    .border(1.dp, Color.Gray, RoundedCornerShape(10.dp))
-//                    .padding(12.dp),
-//                contentAlignment = Alignment.Center
-//            ) {
-//                Text(
-//                    text = "Always verify links before sharing your info.",
-//                    fontSize = 16.sp,
-//                    color = Color.White
-//                )
-//            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Transparent, RoundedCornerShape(10.dp))
+                    .border(1.dp, Color.Gray, RoundedCornerShape(10.dp))
+                    .padding(12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Always verify links before sharing your info.",
+                    fontSize = 16.sp,
+                    color = Color.White
+                )
+            }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(36.dp))
 
-            // Buttons Grid
-            Column(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    HomeButtons("Probability URL", R.drawable.ic_link, onClick = {
-                        navController.navigate(Screen.URL.route)
-                    })
-                    Spacer(modifier = Modifier.width(16.dp)) // Add spacing between buttons()
-                    HomeButtons("Probability SMS", R.drawable.ic_message, onClick = {
-                        navController.navigate(Screen.SMS.route)
-                    })
+                    HomeButtons("Scan URL", R.drawable.ic_link) {
+                        navController.navigate(Screen.URL.route) {
+                            popUpTo(Screen.Home.route) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                    HomeButtons("Scan SMS", R.drawable.ic_message) {
+                        navController.navigate(Screen.SMS.route) {
+                            popUpTo(Screen.Home.route) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    HomeButtons("Chat with AI", R.drawable.ic_chat, onClick = {
+                    HomeButtons("Ask AI", R.drawable.ic_chat) {
+                        navController.navigate(Screen.Chat.route) {
+                            popUpTo(Screen.Home.route) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
 
-                    })
-                    Spacer(modifier = Modifier.width(16.dp)) // Add spacing between buttons()
-                    HomeButtons("Learn & Protect", R.drawable.ic_education, onClick = {
-                        navController.navigate(Screen.SecurityTips.route)
-                    })
+                    }
+                    HomeButtons("Learn & Protect", R.drawable.ic_education) {
+                        navController.navigate(Screen.SecurityTips.route) {
+                            popUpTo(Screen.Home.route) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+
+                    }
                 }
             }
         }

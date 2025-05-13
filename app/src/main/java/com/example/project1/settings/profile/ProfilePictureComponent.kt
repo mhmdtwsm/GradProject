@@ -1,6 +1,8 @@
 package com.example.project1.settings.profile
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -14,7 +16,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,6 +26,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
@@ -40,17 +42,44 @@ import androidx.compose.material.icons.filled.Face
 import androidx.compose.ui.res.painterResource
 import androidx.preference.PreferenceManager
 import com.example.project1.R
+import com.example.project1.viewmodel.EditProfileViewModel
 import java.util.UUID
 
 @Composable
 fun ProfilePictureComponent(
     profilePictureUri: Uri?,
     onProfilePictureChanged: (Uri?) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: EditProfileViewModel? = null // Add view model parameter
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var showImagePickerDialog by remember { mutableStateOf(false) }
+
+    // Camera permission state
+    var hasCameraPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    // Permission launcher
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            hasCameraPermission = isGranted
+            if (!isGranted) {
+                Toast.makeText(
+                    context,
+                    "Camera permission is required to take photos",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    )
 
     // Use a key to force recomposition when the image changes
     var imageKey by remember { mutableStateOf(UUID.randomUUID().toString()) }
@@ -73,8 +102,11 @@ fun ProfilePictureComponent(
                         // Save the URI string to SharedPreferences for persistence
                         saveProfilePictureUriToPrefs(context, savedUri.toString())
 
-                        // Update the ViewModel
+                        // Update the ViewModel with the local URI
                         onProfilePictureChanged(savedUri)
+
+                        // Upload the image to the server if viewModel is provided
+                        viewModel?.updateProfilePicture(context, savedUri)
 
                         // Generate a new key to force image recomposition
                         imageKey = UUID.randomUUID().toString()
@@ -106,8 +138,11 @@ fun ProfilePictureComponent(
                     // Save the URI string to SharedPreferences for persistence
                     saveProfilePictureUriToPrefs(context, savedUri.toString())
 
-                    // Update the ViewModel
+                    // Update the ViewModel with the local URI
                     onProfilePictureChanged(savedUri)
+
+                    // Upload the image to the server if viewModel is provided
+                    viewModel?.updateProfilePicture(context, savedUri)
 
                     // Generate a new key to force image recomposition
                     imageKey = UUID.randomUUID().toString()
@@ -127,6 +162,9 @@ fun ProfilePictureComponent(
 
     // Track the image loading state
     var isImageLoading by remember { mutableStateOf(false) }
+
+    // Track if uploading is in progress
+    val isUploading = viewModel?.isUploadingImage ?: false
 
     Box(
         modifier = modifier
@@ -158,8 +196,8 @@ fun ProfilePictureComponent(
                 contentScale = ContentScale.Crop
             )
 
-            // Show loading indicator while image is loading
-            if (isImageLoading) {
+            // Show loading indicator while image is loading or uploading
+            if (isImageLoading || isUploading) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -239,22 +277,26 @@ fun ProfilePictureComponent(
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.clickable {
-                                coroutineScope.launch {
-                                    try {
-                                        // Create a temporary file and get a content:// URI using FileProvider
-                                        tempUri = createTempImageFileUri(context)
-                                        tempUri?.let { uri ->
-                                            cameraLauncher.launch(uri)
+                                if (hasCameraPermission) {
+                                    coroutineScope.launch {
+                                        try {
+                                            // Create a temporary file and get a content:// URI using FileProvider
+                                            tempUri = createTempImageFileUri(context)
+                                            tempUri?.let { uri ->
+                                                cameraLauncher.launch(uri)
+                                            }
+                                            showImagePickerDialog = false
+                                        } catch (e: Exception) {
+                                            Log.e("ProfilePicture", "Failed to launch camera", e)
+                                            Toast.makeText(
+                                                context,
+                                                "Failed to launch camera: ${e.message}",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
                                         }
-                                        showImagePickerDialog = false
-                                    } catch (e: Exception) {
-                                        Log.e("ProfilePicture", "Failed to launch camera", e)
-                                        Toast.makeText(
-                                            context,
-                                            "Failed to launch camera: ${e.message}",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
                                     }
+                                } else {
+                                    cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                                 }
                             }
                         ) {

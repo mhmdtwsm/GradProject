@@ -110,6 +110,16 @@ dependencies {
     // Add multidex support
     implementation("androidx.multidex:multidex:2.0.1")
 
+    // Hilt
+    implementation("com.google.dagger:hilt-android:2.38.1")
+
+    // formatting JSON
+    implementation("com.google.code.gson:gson:2.10.1")
+
+    // Google Accompanist Page
+    implementation("com.google.accompanist:accompanist-pager:0.24.13-rc")
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.24.13-rc")
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -126,6 +136,7 @@ dependencies {
     implementation(libs.firebase.appdistribution.gradle)
     implementation(libs.play.services.vision)
     implementation(libs.barcode.scanning.common)
+    implementation(libs.androidx.espresso.core)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

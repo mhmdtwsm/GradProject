@@ -89,19 +89,19 @@ fun pasteFromClipboard(context: Context): String? {
 @Composable
 fun PasswordTest(navController: NavController) {
     var password by remember { mutableStateOf("") }
-    var passwordStrength by remember { mutableStateOf("Your Password is weak\nUse 8+ characters.\nAdd Aa, 123, @#!.\nAvoid names/dates.") }
+    var passwordStrength by remember { mutableStateOf("Use 8+ characters.\nAdd Aa, 123, @#!.\nAvoid names/dates.") }
     var backgroundColor by remember { mutableStateOf(Color.Gray) }
     val context = LocalContext.current
 
     // Effect to automatically paste and test clipboard content when screen opens
-    LaunchedEffect(Unit) {
-        pasteFromClipboard(context)?.let { clipboardContent ->
-            password = clipboardContent
-            val (strength, color) = checkPasswordStrength(clipboardContent)
-            passwordStrength = strength
-            backgroundColor = color
-        }
-    }
+//    LaunchedEffect(Unit) {
+//        pasteFromClipboard(context)?.let { clipboardContent ->
+//            password = clipboardContent
+//            val (strength, color) = checkPasswordStrength(clipboardContent)
+//            passwordStrength = strength
+//            backgroundColor = color
+//        }
+//    }
     androidx.compose.material3.Scaffold(
         bottomBar = {
             BottomNavigationBar(
@@ -210,22 +210,11 @@ fun PasswordTest(navController: NavController) {
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        val (strength, color) = checkPasswordStrength(password)
-                        passwordStrength = strength
-                        backgroundColor = color
-                    },
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    Text("Test", color = Color.Black)
-                }
             }
         }
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun PasswordTestPreview() {

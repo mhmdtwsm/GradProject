@@ -34,7 +34,7 @@ fun Cards(iconId: Int, title: String, onClick: () -> Unit) {
         backgroundColor = Color(0xFF1C2431), // Ensure background matches parent
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 1.dp)
             .clickable(onClick = onClick)
     ) {
         Row(

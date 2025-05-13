@@ -158,6 +158,7 @@ fun SMSInputField(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
+                    .heightIn(min = 56.dp, max = 56.dp)
             )
 
             IconButton(
@@ -208,7 +209,7 @@ fun SMSHistoryCard(smsItem: SMSHistoryItem) {
 
                 Text(
                     text = statusText,
-                    color = Color.Black,
+                    color = if (smsItem.isSafe == true) Color.Green else Color.Red,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.End,

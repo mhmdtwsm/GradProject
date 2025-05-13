@@ -12,6 +12,8 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -27,8 +29,17 @@ fun BottomNavigationBar(navController: NavController, selectedScreen: String, tx
         backgroundColor = Color(0xFF1C2431),
         contentColor = Color.White,
         modifier = Modifier
-            .padding(vertical = 10.dp)
+            .padding(vertical = 5.dp)
             .zIndex(1f)
+            .drawBehind {
+                val strokeWidth = 2.dp.toPx()
+                drawLine(
+                    color = Color.White,
+                    start = Offset(0f, 0f),
+                    end = Offset(size.width, 0f),
+                    strokeWidth = strokeWidth
+                )
+            },
     ) {
 
         fun navigateIfNotCurrent(route: String) {

@@ -23,6 +23,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import androidx.preference.PreferenceManager
 import com.example.project1.R
 import com.example.project1.authentication.CommonComponents.StandardTextField
 
@@ -64,6 +66,13 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    // Handle login success
+    LaunchedEffect(uiState) {
+        if (uiState is LoginUiState.Success) {
+            Toast.makeText(context, "Login Successful!", Toast.LENGTH_SHORT).show()
+            onNavigateToHome()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -75,29 +84,19 @@ fun LoginScreen(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
                 .background(Color(0xFF1E293B)),
-            verticalArrangement = Arrangement.SpaceAround,
         ) {
             Column {
-                Image(
-                    painter = painterResource(id = R.drawable.register),
-                    contentDescription = "",
-                    contentScale = ContentScale.FillHeight,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxWidth(0.25f)
-                        .size(200.dp)
-                )
-
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.height(180.dp))
                 Text(
-                    text = "Login",
+                    text = "Sign in",
                     fontWeight = FontWeight.Bold,
                     fontSize = 40.sp,
-                    color = Color.White
+                    color = Color.White,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
                 )
 
-                Spacer(modifier = Modifier.height(15.dp))
-
+                Spacer(modifier = Modifier.height(96.dp))
+                Text("Email", color = Color.White, fontSize = 16.sp)
                 // Email field using StandardTextField
                 StandardTextField(
                     value = email,
@@ -116,6 +115,8 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(15.dp))
 
                 // Password field using StandardTextField
+                Text("Password", color = Color.White, fontSize = 16.sp)
+
                 StandardTextField(
                     value = password,
                     onValueChange = { password = it },
@@ -161,17 +162,7 @@ fun LoginScreen(
                             email = email,
                             password = password,
                             context = context,
-                            onSuccess = {
-                                // Navigate to Home Screen on successful login
-
-
-                                onNavigateToHome()
-                                Toast.makeText(
-                                    context,
-                                    "Login Successful!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
+                            onSuccess = { /* Navigation is handled by LaunchedEffect */ }
                         )
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF76808A)),
@@ -187,7 +178,7 @@ fun LoginScreen(
                         )
                     } else {
                         Text(
-                            text = "Login",
+                            text = "Sign in",
                             fontSize = 16.sp,
                             color = Color.White,
                         )
@@ -202,7 +193,7 @@ fun LoginScreen(
                         color = Color.White,
                     )
                     Text(
-                        text = "Register",
+                        text = "Sign up",
                         fontSize = 14.sp,
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
@@ -231,5 +222,10 @@ fun LoginScreen(
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen(onNavigateToRegister = {}, onNavigateToHome = {}, onNavigateToForgotPassword = {}, navController = rememberNavController())
+    LoginScreen(
+        onNavigateToRegister = {},
+        onNavigateToHome = {},
+        onNavigateToForgotPassword = {},
+        navController = rememberNavController()
+    )
 }

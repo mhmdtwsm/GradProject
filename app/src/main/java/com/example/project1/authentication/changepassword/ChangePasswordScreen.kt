@@ -58,7 +58,6 @@ fun ChangePasswordScreen(
                 .background(Color(0xFF1C2431))
                 .padding(innerPadding)
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // Top Bar with Back Button
             Row(
@@ -73,7 +72,7 @@ fun ChangePasswordScreen(
                     contentDescription = "Back",
                     modifier = Modifier
                         .size(30.dp)
-                        .clickable { navController.navigate(Screen.Settings.route) }
+                        .clickable { navController.popBackStack() }
                 )
                 Spacer(modifier = Modifier.weight(0.69f))
                 androidx.compose.material.Text(

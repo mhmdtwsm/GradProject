@@ -75,6 +75,11 @@ fun ToolsMenu(modifier: Modifier = Modifier, navController: NavController) {
                 onClick = { navController.navigate(Screen.SecurityTips.route) }
             )
 
+            Cards(
+                iconId = R.drawable.ic_chat,
+                title = "Ask AI",
+                onClick = { navController.navigate(Screen.Chat.route) }
+            )
 
         }
     }

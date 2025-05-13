@@ -82,7 +82,7 @@ fun SettingsScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(24.dp))
 
             // Account & Privacy Section
-            SectionTitle("Account & Privacy")
+            SectionTitle("Account")
 
             SettingsItem(
                 icon = Icons.Default.Person,
@@ -90,17 +90,17 @@ fun SettingsScreen(navController: NavController) {
                 onClick = { navController.navigate(Screen.Profile.route) }
             )
 
-            SettingsItem(
-                icon = Icons.Default.Warning,
-                title = "Permissions",
-                onClick = { /** TODO Handle notifications & overlay action **/ }
-            )
+//            SettingsItem(
+//                icon = Icons.Default.Warning,
+//                title = "Permissions",
+//                onClick = { /** TODO Handle notifications & overlay action **/ }
+//            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Theme Section
-//            SectionTitle("Theme")
-//            ThemeSwitch(darkModeEnabled = darkModeEnabled)
+//             Theme Section
+            SectionTitle("Theme")
+            ThemeSwitch(darkModeEnabled = darkModeEnabled)
 
 
             HorizontalDivider(

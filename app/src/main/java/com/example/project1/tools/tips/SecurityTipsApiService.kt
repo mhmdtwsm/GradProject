@@ -8,26 +8,25 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.json.JSONArray
 import java.io.IOException
 
-// API response data class
+// Updated API response data class
 data class SecurityTip(
-    val imageUrl: String,
-    val tipText: String
+    val image: String // Base64 encoded image
 )
 
-// Result wrapper class - Note: No Loading object in this sealed class
+// Result wrapper class
 sealed class SecurityTipResult {
-    data class Success(val tip: SecurityTip) : SecurityTipResult()
+    data class Success(val tips: List<SecurityTip>) : SecurityTipResult()
     data class Error(val message: String) : SecurityTipResult()
-    // Loading is removed since it's causing an error
 }
 
 class SecurityTipsApiService {
     private val client = OkHttpClient()
     private val baseUrl = "http://phishaware.runasp.net/api"
 
-    suspend fun getSecurityTip(context: Context): SecurityTipResult {
+    suspend fun getSecurityTips(context: Context): SecurityTipResult {
         return withContext(Dispatchers.IO) {
             // Get auth token from preferences
             val authToken = PreferenceManager.getDefaultSharedPreferences(context)
@@ -37,13 +36,15 @@ class SecurityTipsApiService {
                 return@withContext SecurityTipResult.Error("Not authenticated. Please log in again.")
             }
 
+            if (!isNetworkAvailable(context)) {
+                return@withContext SecurityTipResult.Error("No internet connection. Please check your network settings.")
+            }
 
             val url = "$baseUrl/securitytips"
 
             val request = Request.Builder()
                 .url(url)
                 .get()
-                // Try with "Authorization" header instead of "Authentication"
                 .addHeader("Authorization", "Bearer $authToken")
                 .build()
 
@@ -53,27 +54,27 @@ class SecurityTipsApiService {
 
                 if (response.isSuccessful && responseBody != null) {
                     try {
-                        // Parse the response JSON
-                        val jsonObject = org.json.JSONObject(responseBody)
-                        val imageUrl = jsonObject.getString("imageUrl")
-                        val tipText = jsonObject.getString("tipText")
+                        // Parse the response JSON array
+                        val jsonArray = JSONArray(responseBody)
+                        val tips = mutableListOf<SecurityTip>()
 
-                        return@withContext SecurityTipResult.Success(
-                            SecurityTip(
-                                imageUrl = imageUrl,
-                                tipText = tipText
-                            )
-                        )
+                        for (i in 0 until jsonArray.length()) {
+                            val jsonObject = jsonArray.getJSONObject(i)
+                            val imageBase64 = jsonObject.getString("image")
+                            tips.add(SecurityTip(image = imageBase64))
+                        }
+
+                        return@withContext SecurityTipResult.Success(tips)
                     } catch (e: Exception) {
-                        return@withContext SecurityTipResult.Error("Failed to parse security tip data: ${e.message}")
+                        return@withContext SecurityTipResult.Error("Failed to parse security tips data: ${e.message}")
                     }
                 } else {
                     // Handle API error messages
                     val errorMessage = when (response.code) {
                         401 -> "Authentication failed. Please log in again."
-                        404 -> "Security tip not found. The server may be updating content."
+                        404 -> "Security tips not found. The server may be updating content."
                         500 -> "Server error. Please try again later."
-                        else -> "Failed to fetch security tip: ${response.message}"
+                        else -> "Failed to fetch security tips: ${response.message}"
                     }
                     return@withContext SecurityTipResult.Error(errorMessage)
                 }
@@ -85,7 +86,7 @@ class SecurityTipsApiService {
         }
     }
 
-    // Add this helper method to check for network connectivity
+    // Helper method to check for network connectivity
     private fun isNetworkAvailable(context: Context): Boolean {
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

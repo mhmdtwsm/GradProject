@@ -223,7 +223,9 @@ fun URLScreen(
                     value = urlText.value,
                     onValueChange = { urlText.value = it },
                     placeholder = { Text("Enter URL to scan") },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 56.dp, max = 56.dp),
                     shape = RoundedCornerShape(25.dp),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         containerColor = Color.White,
