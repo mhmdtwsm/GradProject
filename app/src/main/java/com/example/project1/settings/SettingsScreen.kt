@@ -38,6 +38,9 @@ import com.example.project1.SMS.SMSData.SMSRepository
 import com.example.project1.URL.URLData.URLRepository
 import com.example.project1.dataStore
 import com.example.project1.home.BottomNavigationBar
+import com.example.project1.statistics.StatisticsManager
+import com.example.project1.viewmodel.SMSViewModel
+import com.example.project1.viewmodel.URLViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -295,15 +298,37 @@ fun signOutUser(context: Context) {
             imageFile.delete()
         }
 
-        // 4. Close the app after a short delay (optional safety)
+        // 4. Delete statistics.json file
+        val statisticsFile = File(context.filesDir, StatisticsManager.STATISTICS_JSON_FILE)
+        if (statisticsFile.exists()) {
+            statisticsFile.delete()
+            android.util.Log.d("SettingsScreen", "Deleted statistics.json file")
+        }
+
+        // 5. Delete url_history.json file
+        val urlHistoryFile = File(context.filesDir, URLViewModel.HISTORY_JSON_FILE)
+        if (urlHistoryFile.exists()) {
+            urlHistoryFile.delete()
+            android.util.Log.d("SettingsScreen", "Deleted url_history.json file")
+        }
+
+        // 6. Delete sms_history.json file
+        val smsHistoryFile = File(context.filesDir, SMSViewModel.HISTORY_JSON_FILE)
+        StatisticsManager.getInstance(context).clearStatistics()
+        if (smsHistoryFile.exists()) {
+            smsHistoryFile.delete()
+            android.util.Log.d("SettingsScreen", "Deleted sms_history.json file")
+        }
+
+        // 7. Clear local databases
+        URLRepository(context).clearAll()
+        SMSRepository(context).clearAll()
+
+        // 8. Close the app after a short delay (optional safety)
         delay(300) // Let things finish
         withContext(Dispatchers.Main) {
             (context as? Activity)?.finishAffinity()
         }
-
-        // Clear local databases
-        URLRepository(context).clearAll()
-        SMSRepository(context).clearAll()
     }
 }
 

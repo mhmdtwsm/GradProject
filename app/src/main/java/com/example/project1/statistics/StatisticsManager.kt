@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 class StatisticsManager private constructor(private val context: Context) {
     companion object {
         private const val TAG = "StatisticsManager"
-        private const val STATISTICS_JSON_FILE = "statistics.json"
+        const val STATISTICS_JSON_FILE = "statistics.json"
 
         @Volatile
         private var instance: StatisticsManager? = null
@@ -120,4 +120,20 @@ class StatisticsManager private constructor(private val context: Context) {
             "No statistics available"
         }
     }
+
+    fun clearStatistics() {
+        // Clear in-memory data
+        _statistics.value = null
+
+        // Delete the file
+        val file = File(context.filesDir, STATISTICS_JSON_FILE)
+        if (file.exists()) {
+            file.delete()
+            Log.d(TAG, "Statistics file deleted")
+        }
+
+        // Reset the singleton (optional, but good practice)
+        instance = null
+    }
+
 }

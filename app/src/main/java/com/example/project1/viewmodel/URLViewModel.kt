@@ -23,7 +23,7 @@ class URLViewModel(application: Application) : AndroidViewModel(application) {
     // Toggle between SQLite (false) and JSON (true)
     companion object {
         private const val USE_JSON_HISTORY = true
-        private const val HISTORY_JSON_FILE = "url_history.json"
+        const val HISTORY_JSON_FILE = "url_history.json"
         private const val TAG = "URLViewModel"
     }
 

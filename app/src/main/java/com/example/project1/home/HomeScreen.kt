@@ -116,7 +116,11 @@ fun HomeScreen(navController: NavController, message: String? = null) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    HomeButtons("Scan URL", R.drawable.ic_link) {
+                    HomeButtonsWithChart(
+                        title = "Probability URL",
+                        icon = R.drawable.ic_link,
+                        isUrlChart = true
+                    ) {
                         navController.navigate(Screen.URL.route) {
                             popUpTo(Screen.Home.route) {
                                 saveState = true
@@ -125,7 +129,12 @@ fun HomeScreen(navController: NavController, message: String? = null) {
                             restoreState = true
                         }
                     }
-                    HomeButtons("Scan SMS", R.drawable.ic_message) {
+
+                    HomeButtonsWithChart(
+                        title = "Probability SMS",
+                        icon = R.drawable.ic_message,
+                        isUrlChart = false
+                    ) {
                         navController.navigate(Screen.SMS.route) {
                             popUpTo(Screen.Home.route) {
                                 saveState = true
@@ -133,7 +142,6 @@ fun HomeScreen(navController: NavController, message: String? = null) {
                             launchSingleTop = true
                             restoreState = true
                         }
-
                     }
                 }
 
@@ -141,7 +149,7 @@ fun HomeScreen(navController: NavController, message: String? = null) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    HomeButtons("Ask AI", R.drawable.ic_chat) {
+                    HomeButtons("Chat\nwith AI", R.drawable.ic_chat) {
                         navController.navigate(Screen.Chat.route) {
                             popUpTo(Screen.Home.route) {
                                 saveState = true
@@ -149,9 +157,9 @@ fun HomeScreen(navController: NavController, message: String? = null) {
                             launchSingleTop = true
                             restoreState = true
                         }
-
                     }
-                    HomeButtons("Learn & Protect", R.drawable.ic_education) {
+
+                    HomeButtons("Learn &\nProtect", R.drawable.ic_education) {
                         navController.navigate(Screen.SecurityTips.route) {
                             popUpTo(Screen.Home.route) {
                                 saveState = true
@@ -159,7 +167,6 @@ fun HomeScreen(navController: NavController, message: String? = null) {
                             launchSingleTop = true
                             restoreState = true
                         }
-
                     }
                 }
             }
