@@ -8,7 +8,7 @@
         <!-- Duration -->
         <item name="windowSplashScreenAnimationDuration">100</item>
         <!-- Icon-->
-        <item name="android:windowSplashScreenAnimatedIcon">@drawable/logo_white</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
 
         <item name="postSplashScreenTheme">@style/Theme.Project1</item>
 
