@@ -4,13 +4,16 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -27,7 +30,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.project1.R
-import com.example.project1.home.BottomNavigationBar
 
 @Composable
 fun ChatScreen(
@@ -35,8 +37,9 @@ fun ChatScreen(
     viewModel: ChatViewModel = viewModel(factory = ChatViewModel.Factory())
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val questionInput by viewModel.questionInput.collectAsState()
+    val messageInput by viewModel.messageInput.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val chatHistory by viewModel.chatHistory.collectAsState()
 
     val darkBlue = Color(0xFF1A2235)
     val lightGray = Color(0xFFE0E0E0)
@@ -44,7 +47,6 @@ fun ChatScreen(
 
     androidx.compose.material3.Scaffold(
     ) { innerPadding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -70,7 +72,7 @@ fun ChatScreen(
                 )
                 Spacer(modifier = Modifier.weight(0.69f))
                 Text(
-                    "Ask AI",
+                    "Chat with AI",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -81,8 +83,7 @@ fun ChatScreen(
             Spacer(modifier = Modifier.height(20.dp))
             androidx.compose.material3.Divider(color = Color.Gray.copy(alpha = 0.5f))
 
-            Spacer(modifier = Modifier.height(32.dp))
-
+            Spacer(modifier = Modifier.height(16.dp))
 
             Box(
                 modifier = Modifier
@@ -93,10 +94,7 @@ fun ChatScreen(
                     is ChatUiState.Empty -> EmptyState()
                     is ChatUiState.Conversation -> {
                         val conversation = uiState as ChatUiState.Conversation
-                        ConversationState(
-                            question = conversation.question,
-                            answer = conversation.answer
-                        )
+                        ChatConversation(messages = conversation.messages)
                     }
                 }
 
@@ -108,16 +106,10 @@ fun ChatScreen(
                 }
             }
 
-            Divider(
-                color = Color.White.copy(alpha = 0.2f),
-                thickness = 1.dp,
-                modifier = Modifier.padding(vertical = 16.dp)
-            )
-
-            QuestionInput(
-                value = questionInput,
-                onValueChange = viewModel::onQuestionInputChange,
-                onSendClick = viewModel::sendQuestion,
+            MessageInput(
+                value = messageInput,
+                onValueChange = viewModel::onMessageInputChange,
+                onSendClick = viewModel::sendMessage,
                 isLoading = isLoading
             )
         }
@@ -135,24 +127,19 @@ fun EmptyState() {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Write a question....",
+            text = "Write a message...",
             color = Color.White,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 2.dp)
         )
 
-        // Simple robot illustration
-        // In a real app, you would use an actual image resource
-        // For this example, I'm using a placeholder
         Box(
             modifier = Modifier
                 .size(300.dp)
                 .padding(top = 10.dp),
             contentAlignment = Alignment.Center
         ) {
-            // This is a simplified representation of the robot
-            // Replace with your actual robot image
             Image(
                 painter = painterResource(id = R.drawable.robot),
                 contentDescription = "Robot",
@@ -163,67 +150,73 @@ fun EmptyState() {
 }
 
 @Composable
-fun ConversationState(question: String, answer: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 16.dp)
-    ) {
-        // Question section
-        Text(
-            text = "Question",
-            color = Color.White,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+fun ChatConversation(messages: List<ChatMessage>) {
+    val listState = rememberLazyListState()
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(24.dp))
-                .background(Color.LightGray)
-                .padding(16.dp)
-        ) {
-            Text(
-                text = question,
-                color = Color.Black,
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
+    // Auto-scroll to the bottom when new messages are added
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) {
+            listState.animateScrollToItem(messages.size - 1)
         }
+    }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Answer section
-        Text(
-            text = "Answer",
-            color = Color.White,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(24.dp))
-                .background(Color(0xFF3B6EE9))
-                .padding(16.dp)
-        ) {
-            Text(
-                text = answer,
-                color = Color.White,
-                fontSize = 16.sp,
-                modifier = Modifier.fillMaxWidth()
-            )
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        state = listState,
+        contentPadding = PaddingValues(vertical = 8.dp)
+    ) {
+        items(messages) { message ->
+            ChatMessageItem(message)
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
 @Composable
-fun QuestionInput(
+fun ChatMessageItem(message: ChatMessage) {
+    val isUserMessage = message.role == "user"
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = if (isUserMessage) Arrangement.Start else Arrangement.End
+    ) {
+        Box(
+            modifier = Modifier
+                .widthIn(max = 280.dp)
+                .clip(
+                    RoundedCornerShape(
+                        topStart = if (isUserMessage) 4.dp else 16.dp,
+                        topEnd = if (isUserMessage) 16.dp else 4.dp,
+                        bottomStart = 16.dp,
+                        bottomEnd = 16.dp
+                    )
+                )
+                .background(
+                    if (isUserMessage) Color.LightGray else Color(0xFF3B6EE9)
+                )
+                .padding(12.dp)
+        ) {
+            if (isUserMessage) {
+                // User messages are displayed as regular text
+                Text(
+                    text = message.content,
+                    color = Color.Black,
+                    fontSize = 16.sp
+                )
+            } else {
+                // AI messages are rendered as Markdown
+                MarkdownText(
+                    markdown = message.content,
+                    color = Color.White,
+                    fontSize = 16f
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MessageInput(
     value: String,
     onValueChange: (String) -> Unit,
     onSendClick: () -> Unit,
@@ -232,16 +225,16 @@ fun QuestionInput(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 16.dp),
+            .padding(top = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = { Text("Send your question") },
+            placeholder = { Text("Message chat") },
             modifier = Modifier
                 .weight(1f)
-                .clip(CircleShape),
+                .clip(RoundedCornerShape(24.dp)),
             colors = TextFieldDefaults.textFieldColors(
                 backgroundColor = Color.LightGray,
                 cursorColor = Color.DarkGray,
@@ -259,12 +252,12 @@ fun QuestionInput(
                 .padding(start = 8.dp)
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(Color.LightGray)
+                .background(Color(0xFF3B6EE9))
         ) {
             Icon(
                 imageVector = Icons.Default.Send,
                 contentDescription = "Send",
-                tint = Color.DarkGray
+                tint = Color.White
             )
         }
     }

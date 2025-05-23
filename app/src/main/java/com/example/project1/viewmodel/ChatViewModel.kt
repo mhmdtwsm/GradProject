@@ -15,40 +15,63 @@ class ChatViewModel(
     private val _uiState = MutableStateFlow<ChatUiState>(ChatUiState.Empty)
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
-    private val _questionInput = MutableStateFlow("")
-    val questionInput = _questionInput.asStateFlow()
+    private val _messageInput = MutableStateFlow("")
+    val messageInput = _messageInput.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
 
-    fun onQuestionInputChange(input: String) {
-        _questionInput.value = input
+    // Store chat history
+    private val _chatHistory = MutableStateFlow<List<ChatMessage>>(emptyList())
+    val chatHistory = _chatHistory.asStateFlow()
+
+    fun onMessageInputChange(input: String) {
+        _messageInput.value = input
     }
 
-    fun sendQuestion() {
-        val question = _questionInput.value.trim()
-        if (question.isEmpty()) return
+    fun sendMessage() {
+        val message = _messageInput.value.trim()
+        if (message.isEmpty() || _isLoading.value) return
 
         _isLoading.value = true
 
+        // Add user message to chat history
+        val userMessage = ChatMessage("user", message)
+        val currentHistory = _chatHistory.value.toMutableList()
+        currentHistory.add(userMessage)
+        _chatHistory.value = currentHistory
+
+        // Update UI state to show the conversation
+        _uiState.value = ChatUiState.Conversation(_chatHistory.value)
+
         viewModelScope.launch {
-            when (val result = chatApiService.sendQuestion(question)) {
+            // Send message to API
+            when (val result =
+                chatApiService.sendMessage(message, _chatHistory.value.dropLast(1))) {
                 is ChatApiService.ChatResult.Success -> {
-                    _uiState.value = ChatUiState.Conversation(
-                        question = question,
-                        answer = result.response
-                    )
+                    // Add assistant response to chat history
+                    val assistantMessage = ChatMessage("assistant", result.response)
+                    val updatedHistory = _chatHistory.value.toMutableList()
+                    updatedHistory.add(assistantMessage)
+                    _chatHistory.value = updatedHistory
+
+                    // Update UI state
+                    _uiState.value = ChatUiState.Conversation(_chatHistory.value)
                 }
 
                 is ChatApiService.ChatResult.Error -> {
-                    _uiState.value = ChatUiState.Conversation(
-                        question = question,
-                        answer = "Error: ${result.message}"
-                    )
+                    // Add error message to chat history
+                    val errorMessage = ChatMessage("assistant", "Error: ${result.message}")
+                    val updatedHistory = _chatHistory.value.toMutableList()
+                    updatedHistory.add(errorMessage)
+                    _chatHistory.value = updatedHistory
+
+                    // Update UI state
+                    _uiState.value = ChatUiState.Conversation(_chatHistory.value)
                 }
             }
             _isLoading.value = false
-            _questionInput.value = ""
+            _messageInput.value = ""
         }
     }
 
@@ -67,5 +90,5 @@ class ChatViewModel(
 
 sealed class ChatUiState {
     object Empty : ChatUiState()
-    data class Conversation(val question: String, val answer: String) : ChatUiState()
+    data class Conversation(val messages: List<ChatMessage>) : ChatUiState()
 }

@@ -15,7 +15,7 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "us
 object DataStoreManager {
     val USERNAME_KEY = stringPreferencesKey("username")
     val EMAIL = stringPreferencesKey("user_email")
-    val AUTH_TOKEN = stringPreferencesKey("auth_token")
+    val AUTH_TOKEN = stringPreferencesKey("AUTH_TOKEN")
     val VERIFY_TOKEN = stringPreferencesKey("refresh_token")
     val ONBOARDING_KEY = booleanPreferencesKey("onboarding_completed")
     // Add more keys as needed
@@ -23,6 +23,12 @@ object DataStoreManager {
     suspend fun saveUsername(context: Context, username: String) {
         context.dataStore.edit { prefs ->
             prefs[USERNAME_KEY] = username
+        }
+    }
+
+    fun getAuthToken(context: Context): Flow<String?> {
+        return context.dataStore.data.map { prefs ->
+            prefs[AUTH_TOKEN]
         }
     }
 

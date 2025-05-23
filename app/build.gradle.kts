@@ -1,5 +1,3 @@
-import org.gradle.api.JavaVersion
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -121,27 +119,63 @@ dependencies {
     implementation("com.google.accompanist:accompanist-pager-indicators:0.24.13-rc")
 
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    implementation(libs.firebase.auth)
-    implementation(libs.androidx.lifecycle.service)
-    implementation(libs.androidx.preference.ktx)
-    implementation(libs.volley)
-    implementation(libs.firebase.appdistribution.gradle)
-    implementation(libs.play.services.vision)
-    implementation(libs.barcode.scanning.common)
-    implementation(libs.androidx.espresso.core)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
+    // Markwon for Markdown rendering
+    // Markwon for Markdown rendering - simplified version
+    implementation("io.noties.markwon:core:4.6.2") {
+        // Exclude the conflicting annotations-java5 dependency
+        exclude(group = "org.jetbrains", module = "annotations-java5")
+    }
+    implementation("io.noties.markwon:html:4.6.2") {
+        // Exclude the conflicting annotations-java5 dependency
+        exclude(group = "org.jetbrains", module = "annotations-java5")
+    }
+
+    // Force a specific version of JetBrains annotations
+    implementation("org.jetbrains:annotations:23.0.0")
+
+    // KeePassJava2 libraries
+//    implementation("com.github.kunzisoft.keepass-java2-android:database:2.6.4")
+//    implementation("com.github.kunzisoft.keepass-java2-android:database-kdbx:2.6.4")
+//    implementation("com.github.kunzisoft.keepass-java2-android:database-kdb:2.6.4")
+//    implementation("com.github.kunzisoft.keepass-java2-android:crypto:2.6.4")
+
+
+    // Add this configuration to the bottom of your build.gradle.kts file
+    configurations.all {
+        resolutionStrategy {
+            // Force a specific version of JetBrains annotations
+            force("org.jetbrains:annotations:23.0.0")
+            // Exclude annotations-java5 completely
+            exclude(group = "org.jetbrains", module = "annotations-java5")
+        }
+
+
+
+
+
+
+        implementation(libs.androidx.core.ktx)
+        implementation(libs.androidx.lifecycle.runtime.ktx)
+        implementation(libs.androidx.activity.compose)
+        implementation(platform(libs.androidx.compose.bom))
+        implementation(libs.androidx.ui)
+        implementation(libs.androidx.ui.graphics)
+        implementation(libs.androidx.ui.tooling.preview)
+        implementation(libs.androidx.material3)
+        implementation(libs.firebase.auth)
+        implementation(libs.androidx.lifecycle.service)
+        implementation(libs.androidx.preference.ktx)
+        implementation(libs.volley)
+        implementation(libs.firebase.appdistribution.gradle)
+        implementation(libs.play.services.vision)
+        implementation(libs.barcode.scanning.common)
+        implementation(libs.androidx.espresso.core)
+        testImplementation(libs.junit)
+        androidTestImplementation(libs.androidx.junit)
+        androidTestImplementation(libs.androidx.espresso.core)
+        androidTestImplementation(platform(libs.androidx.compose.bom))
+        androidTestImplementation(libs.androidx.ui.test.junit4)
+        debugImplementation(libs.androidx.ui.tooling)
+        debugImplementation(libs.androidx.ui.test.manifest)
+    }
 }

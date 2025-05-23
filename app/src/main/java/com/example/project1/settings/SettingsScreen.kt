@@ -1,29 +1,48 @@
 package com.example.project1.settings
 
 import Screen
-import android.app.Activity
 import android.content.Context
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,9 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.edit
 import androidx.navigation.NavController
 import androidx.preference.PreferenceManager
-import com.example.project1.DataStoreManager.ONBOARDING_KEY
 import com.example.project1.DataStoreManager.USERNAME_KEY
-import com.example.project1.R
 import com.example.project1.SMS.SMSData.SMSRepository
 import com.example.project1.URL.URLData.URLRepository
 import com.example.project1.dataStore
@@ -43,7 +60,6 @@ import com.example.project1.viewmodel.SMSViewModel
 import com.example.project1.viewmodel.URLViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -138,7 +154,7 @@ fun SettingsScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(32.dp))
 
             // Sign Out Button
-            SignOutButton(context = LocalContext.current)
+            SignOutButton(context = LocalContext.current, navController = navController)
 
             Spacer(modifier = Modifier.height(32.dp)) // Extra space to prevent UI cutoff
         }
@@ -184,13 +200,13 @@ fun LanguageSelector() {
 }
 
 @Composable
-fun SignOutButton(context: Context) {
+fun SignOutButton(context: Context, navController: NavController) {
     val darkNavy = Color(0xFF1C2431)
 
     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         Button(
             onClick = {
-                signOutUser(context = context)
+                signOutUser(context = context, navController = navController)
             },
             modifier = Modifier
                 .width(200.dp)
@@ -273,7 +289,7 @@ fun SettingsItem(
     }
 }
 
-fun signOutUser(context: Context) {
+fun signOutUser(context: Context, navController: NavController) {
     val prefs = PreferenceManager.getDefaultSharedPreferences(context)
 
     // 1. Clear SharedPreferences
@@ -288,7 +304,6 @@ fun signOutUser(context: Context) {
     CoroutineScope(Dispatchers.IO).launch {
         context.dataStore.edit { preferences ->
             preferences.remove(USERNAME_KEY)
-            preferences[ONBOARDING_KEY] = false
         }
 
         // 3. Delete profile picture file
@@ -324,10 +339,16 @@ fun signOutUser(context: Context) {
         URLRepository(context).clearAll()
         SMSRepository(context).clearAll()
 
-        // 8. Close the app after a short delay (optional safety)
-        delay(300) // Let things finish
         withContext(Dispatchers.Main) {
-            (context as? Activity)?.finishAffinity()
+            navController.navigate(Screen.Login.route) {
+                // Optional: Clear back stack so user can't go back
+                popUpTo(0) {
+                    inclusive = true  // This will remove the start destination too
+                }
+
+                // Prevent multiple login screens if back button is pressed
+                launchSingleTop = true
+            }
         }
     }
 }

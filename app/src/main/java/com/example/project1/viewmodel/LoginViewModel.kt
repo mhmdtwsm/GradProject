@@ -53,7 +53,7 @@ class LoginViewModel : ViewModel() {
                         .apply()
 
                     // Set onboarding status
-                    DataStoreManager.saveOnboardingStatus(context, true)
+//                    DataStoreManager.saveOnboardingStatus(context, true)
 
                     // After successful login, fetch and save user data
                     fetchUserProfile(context)

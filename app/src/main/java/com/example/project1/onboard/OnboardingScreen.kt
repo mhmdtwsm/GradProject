@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -19,8 +18,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.project1.DataStoreManager
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -45,6 +46,7 @@ fun OnboardingScreen(onFinished: () -> Unit) {
         }
     }
 
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     Scaffold(bottomBar = {
@@ -52,51 +54,64 @@ fun OnboardingScreen(onFinished: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFF1E293B)) // Replace with your desired color
-        ){
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp, 70.dp)
-                .background(Color.Transparent),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
         ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp, 70.dp)
+                    .background(Color.Transparent),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
-            Box(modifier = Modifier.weight(1f),
-                contentAlignment = Alignment.CenterStart) { if (buttonState.value[0].isNotEmpty()) {
-                ButtonUi (text = buttonState.value[0],
-                    backgroundColor = Color.Transparent,
-                    textColor = Color.Gray) {
-                    scope.launch {
-                        if (pagerState.currentPage > 0) {
-                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    if (buttonState.value[0].isNotEmpty()) {
+                        ButtonUi(
+                            text = buttonState.value[0],
+                            backgroundColor = Color.Transparent,
+                            textColor = Color.Gray
+                        ) {
+                            scope.launch {
+                                if (pagerState.currentPage > 0) {
+                                    pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                                }
+                            }
                         }
                     }
                 }
-            }
-            }
-            Box(modifier = Modifier.weight(1f),
-                contentAlignment = Alignment.Center) {
-                IndicatorUI(pageSize = pages.size, currentPage = pagerState.currentPage)
-            }
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    IndicatorUI(pageSize = pages.size, currentPage = pagerState.currentPage)
+                }
 
-            Box(modifier = Modifier.weight(1f),
-                contentAlignment = Alignment.CenterEnd) {
-                ButtonUi (text = buttonState.value[1],
-                    backgroundColor = Color.Gray,
-                    textColor = Color.White) {
-                    scope.launch {
-                        if (pagerState.currentPage < pages.size - 1) {
-                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                        } else {
-                            onFinished()
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    ButtonUi(
+                        text = buttonState.value[1],
+                        backgroundColor = Color.Gray,
+                        textColor = Color.White
+                    ) {
+                        scope.launch {
+                            if (pagerState.currentPage < pages.size - 1) {
+                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                            } else {
+                                DataStoreManager.saveOnboardingStatus(context, true)
+                                onFinished()
+                            }
                         }
                     }
                 }
-            }
 
+            }
         }
-    }}, content = {
+    }, content = {
         Column(Modifier.padding(it)) {
             HorizontalPager(state = pagerState) { index ->
                 OnboardingGraphUI(onboardingModel = pages[index])

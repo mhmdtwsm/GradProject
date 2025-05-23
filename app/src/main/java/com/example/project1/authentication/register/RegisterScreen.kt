@@ -1,7 +1,5 @@
 package com.example.project1.authentication.register
 
-import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,22 +12,24 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,6 +54,7 @@ fun RegisterScreen(
     viewModel: RegisterViewModel = viewModel()
 ) {
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
 
     Box(
         modifier = Modifier
@@ -64,7 +65,8 @@ fun RegisterScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
-                .background(Color(0xFF1E293B)),
+                .background(Color(0xFF1E293B))
+                .verticalScroll(scrollState),
             verticalArrangement = Arrangement.SpaceAround,
         ) {
             Column {
@@ -141,6 +143,37 @@ fun RegisterScreen(
                     keyboardType = KeyboardType.Password
                 )
 
+                // Password validation hints
+                val passwordHints = viewModel.getPasswordValidationHints()
+                if (passwordHints.isNotEmpty() && viewModel.password.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF334155)
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp)
+                        ) {
+                            Text(
+                                text = "Password requirements:",
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            passwordHints.forEach { hint ->
+                                Text(
+                                    text = hint,
+                                    color = Color(0xFFEF4444),
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+                    }
+                }
+
                 // Confirm Password TextField
                 Spacer(modifier = Modifier.height(15.dp))
                 Text("Confirm Password", color = Color.White, fontSize = 16.sp)
@@ -170,14 +203,35 @@ fun RegisterScreen(
                     keyboardType = KeyboardType.Password
                 )
 
+                // Password mismatch warning
+                if (viewModel.confirmPassword.isNotEmpty() &&
+                    viewModel.password.isNotEmpty() &&
+                    viewModel.password != viewModel.confirmPassword
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Passwords do not match",
+                        color = Color(0xFFEF4444),
+                        fontSize = 12.sp
+                    )
+                }
+
                 // Display error message if there is one
                 if (viewModel.errorMessage.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = viewModel.errorMessage,
-                        color = Color.Red,
-                        fontSize = 14.sp
-                    )
+                    Spacer(modifier = Modifier.height(15.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFDC2626).copy(alpha = 0.1f)
+                        )
+                    ) {
+                        Text(
+                            text = viewModel.errorMessage,
+                            color = Color(0xFFEF4444),
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(30.dp))
@@ -232,6 +286,8 @@ fun RegisterScreen(
                         }
                     )
                 }
+
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }

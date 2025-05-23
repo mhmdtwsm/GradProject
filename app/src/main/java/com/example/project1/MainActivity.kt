@@ -1,6 +1,7 @@
 package com.example.project1
 
 import AppNavigation
+import Screen
 import android.Manifest
 import android.content.Intent
 import android.os.Build
@@ -12,7 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.remember
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
-import com.example.project1.DataStoreManager
+import androidx.preference.PreferenceManager
 import com.example.project1.service.ClipboardService
 import com.example.project1.ui.theme.Project1Theme
 import kotlinx.coroutines.flow.first
@@ -49,13 +50,18 @@ class MainActivity : ComponentActivity() {
     }
 
     private suspend fun determineInitialDestination(): Pair<String, Boolean> {
+
+        val loggedIn = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+            .getString("AUTH_TOKEN", null)
+
+
         val isOnboardingCompleted = DataStoreManager
             .isOnboardingCompleted(applicationContext)
             .first()
 
         return when (intent?.action) {
             "OPEN_URL_SCAN" -> {
-                if (isOnboardingCompleted) {
+                if (isOnboardingCompleted && loggedIn != null) {
                     Screen.URL.route to intent.getBooleanExtra("AUTO_SCAN", false)
                 } else {
                     Screen.Onboarding.route to false
@@ -63,7 +69,8 @@ class MainActivity : ComponentActivity() {
             }
 
             else -> {
-                if (isOnboardingCompleted) Screen.Home.route to false
+                if (isOnboardingCompleted && loggedIn != null) Screen.Home.route to false
+                else if (isOnboardingCompleted) Screen.Login.route to false
                 else Screen.Onboarding.route to false
             }
         }

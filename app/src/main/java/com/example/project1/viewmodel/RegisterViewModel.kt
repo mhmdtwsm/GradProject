@@ -29,11 +29,28 @@ class RegisterViewModel : ViewModel() {
         listOf("!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "-", "+", "=")
     val numbers = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
 
-    // Validation functions
+    // Enhanced validation functions
+    private fun validatePassword(password: String): String? {
+        return when {
+            password.length < 6 -> "Password must be at least 6 characters long"
+            password.length < 8 -> "Password is too short. Password must be at least 8 characters long"
+            !password.any { it.isDigit() } -> "Password must have at least one number (0-9)"
+            !password.any { it.isLowerCase() } -> "Password must have at least one lowercase letter (a-z)"
+            !password.any { it.isUpperCase() } -> "Password must have at least one uppercase letter (A-Z)"
+            !specialCharacters.any { password.contains(it) } -> "Password must contain at least one special character (!@#$%^&*()_-+=)"
+            else -> null // Password is valid
+        }
+    }
+
     fun validateInputs(): Boolean {
         when {
-            name.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank() -> {
-                errorMessage = "All fields are required"
+            name.isBlank() -> {
+                errorMessage = "Name is required"
+                return false
+            }
+
+            email.isBlank() -> {
+                errorMessage = "Email is required"
                 return false
             }
 
@@ -42,26 +59,65 @@ class RegisterViewModel : ViewModel() {
                 return false
             }
 
-            !(password.length >= 8) || !(specialCharacters.any {
-                password.contains(it)
-            }) || !(numbers.any {
-                password.contains(it)
-            }) -> {
-                errorMessage =
-                    "Password must be at least 8 characters long and contain at least one special character and number"
+            password.isBlank() -> {
+                errorMessage = "Password is required"
                 return false
             }
 
-            password != confirmPassword -> {
-                errorMessage = "Passwords do not match"
+            confirmPassword.isBlank() -> {
+                errorMessage = "Please confirm your password"
                 return false
             }
 
             else -> {
+                // Validate password with specific error messages
+                val passwordError = validatePassword(password)
+                if (passwordError != null) {
+                    errorMessage = passwordError
+                    return false
+                }
+
+                // Check if passwords match
+                if (password != confirmPassword) {
+                    errorMessage = "Passwords do not match"
+                    return false
+                }
+
                 errorMessage = ""
                 return true
             }
         }
+    }
+
+    // Real-time password validation for better UX
+    fun getPasswordValidationHints(): List<String> {
+        val hints = mutableListOf<String>()
+
+        if (password.isNotEmpty()) {
+            if (password.length < 6) {
+                hints.add("• At least 6 characters")
+            } else if (password.length < 8) {
+                hints.add("• At least 8 characters (recommended)")
+            }
+
+            if (!password.any { it.isDigit() }) {
+                hints.add("• At least one number (0-9)")
+            }
+
+            if (!password.any { it.isLowerCase() }) {
+                hints.add("• At least one lowercase letter (a-z)")
+            }
+
+            if (!password.any { it.isUpperCase() }) {
+                hints.add("• At least one uppercase letter (A-Z)")
+            }
+
+            if (!specialCharacters.any { password.contains(it) }) {
+                hints.add("• At least one special character (!@#$%^&*()_-+=)")
+            }
+        }
+
+        return hints
     }
 
     fun register(

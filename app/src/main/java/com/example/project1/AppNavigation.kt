@@ -8,25 +8,29 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.passwordmanager.screens.AccountDetailsScreen
+import com.example.passwordmanager.screens.AddAccountScreen
+import com.example.passwordmanager.screens.DashboardScreen
+import com.example.passwordmanager.screens.VaultScreen
 import com.example.project1.SMSScreen
 import com.example.project1.URLScreen
 import com.example.project1.authentication.login.LoginScreen
-import com.example.project1.onboard.OnboardingScreen
 import com.example.project1.authentication.passwordreset.ForgotPasswordScreen
-import com.example.project1.authentication.passwordreset.ResetPasswordScreen
 import com.example.project1.authentication.passwordreset.OTP.VerifyCodeScreen
-import com.example.project1.authentication.register.RegisterScreen
-import com.example.project1.home.HomeScreen
-import com.example.project1.settings.terms.TermsScreen
-import com.example.project1.tools.passwordtest.PasswordTest
-import com.example.project1.tools.ToolsMenu
-import com.example.project1.tools.passwordgenerate.PasswordGenerate
-import com.example.project1.settings.SettingsScreen
-import com.example.project1.settings.help.HelpScreen
+import com.example.project1.authentication.passwordreset.ResetPasswordScreen
 import com.example.project1.authentication.passwordreset.VerifyEmailScreen
+import com.example.project1.authentication.register.RegisterScreen
 import com.example.project1.authentication.resetpassword.ChangePasswordScreen
 import com.example.project1.chat.ChatScreen
+import com.example.project1.home.HomeScreen
+import com.example.project1.onboard.OnboardingScreen
+import com.example.project1.settings.SettingsScreen
+import com.example.project1.settings.help.HelpScreen
 import com.example.project1.settings.profile.EditProfileScreen
+import com.example.project1.settings.terms.TermsScreen
+import com.example.project1.tools.ToolsMenu
+import com.example.project1.tools.passwordgenerate.PasswordGenerate
+import com.example.project1.tools.passwordtest.PasswordTest
 import com.example.project1.tools.tips.SecurityTipsScreen
 
 
@@ -60,6 +64,13 @@ sealed class Screen(val route: String) {
     object PasswordGenerate : Screen("passwordGenerate")
     object SecurityTips : Screen("securityTips")
     object Chat : Screen("chat")
+
+    // Password Manager
+    object Dashboard : Screen("dashboard")
+    object Vault : Screen("vault/{vaultId}")
+    object AddAccount : Screen("add_account/{vaultId}")
+    object AccountDetails : Screen("account_details/{vaultId}/{accountId}")
+
 }
 
 @Composable
@@ -274,6 +285,28 @@ fun AppNavigation(
             ChatScreen(navController = navController)
         }
 
+        // Password Manager
+
+        composable(Screen.Dashboard.route) {
+            DashboardScreen(navController = navController)
+        }
+        composable(Screen.Vault.route) { backStackEntry ->
+            val vaultId = backStackEntry.arguments?.getString("vaultId") ?: ""
+            VaultScreen(navController = navController, vaultId = vaultId)
+        }
+        composable(Screen.AddAccount.route) { backStackEntry ->
+            val vaultId = backStackEntry.arguments?.getString("vaultId") ?: ""
+            AddAccountScreen(navController = navController, vaultId = vaultId)
+        }
+        composable(Screen.AccountDetails.route) { backStackEntry ->
+            val vaultId = backStackEntry.arguments?.getString("vaultId") ?: ""
+            val accountId = backStackEntry.arguments?.getString("accountId") ?: ""
+            AccountDetailsScreen(
+                navController = navController,
+                vaultId = vaultId,
+                accountId = accountId
+            )
+        }
 
     }
 }
