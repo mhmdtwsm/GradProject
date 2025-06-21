@@ -16,6 +16,9 @@ local.properties
 *.dex
 *.class
 
+# Exception for app.apk
+!App.apk
+
 # Logs
 *.log
 
