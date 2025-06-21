@@ -1,15 +1,20 @@
 package com.example.project1.viewmodel
 
+import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.preference.PreferenceManager
+import com.example.project1.authentication.passwordreset.verifyemail.SendOtpApiService
 import com.example.project1.authentication.register.RegisterApiService
 import kotlinx.coroutines.launch
 
 class RegisterViewModel : ViewModel() {
     private val apiService = RegisterApiService()
+    private val sendOtpApiService = SendOtpApiService()
 
     // UI state
     var name by mutableStateOf("")
@@ -42,7 +47,7 @@ class RegisterViewModel : ViewModel() {
         }
     }
 
-    fun validateInputs(): Boolean {
+    private fun validateInputs(): Boolean {
         when {
             name.isBlank() -> {
                 errorMessage = "Name is required"
@@ -121,30 +126,73 @@ class RegisterViewModel : ViewModel() {
     }
 
     fun register(
+        context: Context,
         onSuccess: () -> Unit,
         saveUserData: (String) -> Unit
     ) {
         if (!validateInputs()) return
 
         isLoading = true
+        errorMessage = ""
 
         viewModelScope.launch {
             try {
-                val response = apiService.registerUser(name, email, password)
+                Log.d("RegisterViewModel", "Starting registration for email: $email")
 
-                isLoading = false
+                // Step 1: Register the user
+                val registerResponse = apiService.registerUser(name, email, password)
 
-                if (response.success) {
-                    // Save user data locally
-                    saveUserData(name)
-                    onSuccess()
+                if (registerResponse.success) {
+                    Log.d("RegisterViewModel", "Registration successful, sending OTP...")
+
+                    // Step 2: Automatically send OTP to the registered email
+                    val otpResponse = sendOtpApiService.sendOtp(email, fromLogin = false)
+
+                    if (otpResponse.success && otpResponse.token != null) {
+                        Log.d(
+                            "RegisterViewModel",
+                            "OTP sent successfully, token: ${otpResponse.token}"
+                        )
+
+                        // Step 3: Store email and token in SharedPreferences for OTP verification
+                        val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+                        sharedPrefs.edit()
+                            .putString("VERIFY_EMAIL", email)
+                            .putString("VERIFY_TOKEN", otpResponse.token)
+                            .apply()
+
+                        Log.d("RegisterViewModel", "Email and token stored in SharedPreferences")
+
+                        // Step 4: Save user data locally
+                        saveUserData(name)
+
+                        isLoading = false
+                        errorMessage = ""
+
+                        // Step 5: Navigate directly to OTP verification screen
+                        onSuccess()
+
+                    } else {
+                        isLoading = false
+                        errorMessage =
+                            "Registration successful but failed to send verification code. Please try again."
+                        Log.e("RegisterViewModel", "Failed to send OTP: ${otpResponse.message}")
+                    }
                 } else {
-                    errorMessage = response.message
+                    isLoading = false
+                    errorMessage = registerResponse.message
+                    Log.e("RegisterViewModel", "Registration failed: ${registerResponse.message}")
                 }
             } catch (e: Exception) {
                 isLoading = false
                 errorMessage = "Registration failed: ${e.message}"
+                Log.e("RegisterViewModel", "Registration exception: ${e.message}", e)
             }
         }
+    }
+
+    // Clear error message when user starts typing
+    fun clearError() {
+        errorMessage = ""
     }
 }

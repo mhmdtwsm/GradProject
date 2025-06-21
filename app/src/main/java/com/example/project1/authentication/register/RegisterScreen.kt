@@ -27,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,6 +56,13 @@ fun RegisterScreen(
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
+
+    // Clear error message when user starts interacting
+    LaunchedEffect(viewModel.name, viewModel.email, viewModel.password, viewModel.confirmPassword) {
+        if (viewModel.errorMessage.isNotEmpty()) {
+            viewModel.clearError()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -236,10 +244,14 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(30.dp))
 
+                // Register Button - Updated to handle the new flow
                 Button(
                     onClick = {
                         viewModel.register(
+                            context = context,
                             onSuccess = {
+                                // Navigate directly to OTP verification screen
+                                // The email and token are already stored in SharedPreferences
                                 onNavigateToVerifyOTP()
                             },
                             saveUserData = { username ->
@@ -256,10 +268,21 @@ fun RegisterScreen(
                     enabled = !viewModel.isLoading
                 ) {
                     if (viewModel.isLoading) {
-                        CircularProgressIndicator(
-                            color = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Text(
+                                text = "Creating account...",
+                                fontSize = 14.sp,
+                                color = Color.White,
+                            )
+                        }
                     } else {
                         Text(
                             text = "Sign up",

@@ -20,7 +20,8 @@ import java.util.Locale
 class URLNetworkService {
     companion object {
         private const val TAG = "URLNetworkService"
-        private const val API_URL_SCAN = "http://phishaware.runasp.net/api/Prediction/url"
+        private const val API_URL_SCAN =
+            "https://ml-fastapi-app-production.up.railway.app/predict_url"
         private const val API_URL_HISTORY = "http://phishaware.runasp.net/api/Prediction/all_urls"
     }
 

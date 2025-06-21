@@ -18,7 +18,7 @@ import java.nio.charset.StandardCharsets
 class SMSNetworkService {
     companion object {
         private const val TAG = "SMSNetworkService"
-        private const val API_URL = "http://phishaware.runasp.net/api/Prediction/sms"
+        private const val API_URL = "https://ml-fastapi-app-production.up.railway.app/predict_sms"
         private const val HISTORY_API_URL = "http://phishaware.runasp.net/api/Prediction/all_sms"
     }
 

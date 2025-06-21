@@ -167,13 +167,13 @@ fun AppNavigation(
                     navController.popBackStack()
                 },
                 onNavigateToVerifyOTP = {
-                    // Navigate to Home screen
-                    navController.navigate(Screen.VerifyEmail.route) {
+                    navController.navigate("verify_code/false") {
                         popUpTo(Screen.Register.route) { inclusive = true }
                     }
                 }
             )
         }
+
 
         // Password Reset Flow
         composable(Screen.ForgotPassword.route) {
