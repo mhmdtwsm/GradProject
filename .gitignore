@@ -1,0 +1,24 @@
+# Gradle build output
+.gradle/
+build/
+**/build/
+
+# IDE
+.idea/
+*.iml
+
+# Local config
+local.properties
+
+# Android Studio
+*.apk
+*.ap_
+*.dex
+*.class
+
+# Logs
+*.log
+
+# Crash reports
+hs_err_pid*.log
+replay_pid*.log
