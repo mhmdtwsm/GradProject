@@ -7,6 +7,9 @@ build/
 .idea/
 *.iml
 
+# Exception
+!App.apk
+
 # Local config
 local.properties
 
@@ -16,8 +19,6 @@ local.properties
 *.dex
 *.class
 
-# Exception for app.apk
-!App.apk
 
 # Logs
 *.log
