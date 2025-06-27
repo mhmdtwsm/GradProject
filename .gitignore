@@ -14,7 +14,7 @@ build/
 local.properties
 
 # Android Studio
-*.apk
+#*.apk
 *.ap_
 *.dex
 *.class
