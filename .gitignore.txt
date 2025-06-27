@@ -8,7 +8,7 @@ build/
 *.iml
 
 # Exception
-!App.apk
+!APKs/*
 
 # Local config
 local.properties
