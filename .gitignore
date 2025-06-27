@@ -7,6 +7,9 @@ build/
 .idea/
 *.iml
 
+# Exception
+!APKs/*
+
 # Local config
 local.properties
 
