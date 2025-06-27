@@ -1,16 +1,18 @@
 package com.example.project1.home
-import androidx.compose.ui.draw.shadow
 
 import Screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -27,16 +29,15 @@ import com.example.project1.statistics.StatisticsManager
 @Composable
 fun HomeScreen(navController: NavController, message: String? = null) {
 
-    // استرجاع اسم المستخدم
     val context = LocalContext.current
     var userName: String? by remember { mutableStateOf(null) }
+
     LaunchedEffect(Unit) {
         DataStoreManager.getUsername(context).collect { savedUsername ->
             userName = savedUsername
         }
     }
 
-    // اختبار المتغيرات
     val emailauth =
         PreferenceManager.getDefaultSharedPreferences(context).getString("VERIFY_EMAIL", null)
     val authtoken =
@@ -57,12 +58,12 @@ fun HomeScreen(navController: NavController, message: String? = null) {
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(android.graphics.Color.parseColor("#101F31")))
-
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp, vertical = 24.dp),
+                .padding(horizontal = 16.dp, vertical = 24.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // النص الترحيبي مع اسم المستخدم
+
             Text(
                 text = if (userName != null) "Hi, $userName 👋" else "Welcome!",
                 fontSize = 26.sp,
@@ -70,21 +71,19 @@ fun HomeScreen(navController: NavController, message: String? = null) {
                 color = Color.White
             )
 
-            // نص ثانوي
             Text(
-                text = "Welcome to Phishaware! Stay alert, stay safe.",
+                text = "Welcome to PhishAware! Stay alert, stay safe.",
                 fontSize = 16.sp,
-                color = Color(0xFFB0BEC5) // لون رمادي فاتح للتباين
+                color = Color(0xFFB0BEC5)
             )
 
-            // مربع تحذيري
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color(0xFF263238), RoundedCornerShape(12.dp))
                     .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
                     .padding(16.dp)
-                    .shadow(4.dp, RoundedCornerShape(12.dp)), // إضافة Shadow خفيف
+                    .shadow(4.dp, RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -95,11 +94,11 @@ fun HomeScreen(navController: NavController, message: String? = null) {
                 )
             }
 
-            // الأقسام الرئيسية
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
+
                 // الصف الأول
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -149,6 +148,35 @@ fun HomeScreen(navController: NavController, message: String? = null) {
                             launchSingleTop = true
                             restoreState = true
                         }
+                    }
+                }
+
+                // 🔹 كارت الانضمام إلى الكوميونتي 🔹
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .clickable {
+                            navController.navigate(Screen.Community.route)
+                        },
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF1E3A5F)
+                    )
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "💬 Join the Community",
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
                 }
             }

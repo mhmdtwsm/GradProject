@@ -50,7 +50,7 @@ fun ChatScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF1C2431))
+                .background(Color(android.graphics.Color.parseColor("#101F31")))
                 .padding(innerPadding)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,

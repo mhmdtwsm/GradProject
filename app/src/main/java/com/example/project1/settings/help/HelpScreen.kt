@@ -1,5 +1,7 @@
 package com.example.project1.settings.help
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -7,7 +9,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,8 +27,7 @@ import com.example.project1.home.BottomNavigationBar
 
 @Composable
 fun HelpScreen(navController: NavController) {
-    val darkNavy = Color(0xFF1E293D)
-    val headTextPadd = (LocalConfiguration.current.screenWidthDp) / 10
+    val context = LocalContext.current
 
     androidx.compose.material3.Scaffold(
         bottomBar = {
@@ -41,7 +41,7 @@ fun HelpScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF1C2431))
+                .background(Color(android.graphics.Color.parseColor("#101F31")))
                 .padding(innerPadding)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -73,31 +73,42 @@ fun HelpScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            androidx.compose.material3.Divider(color = Color.Gray.copy(alpha = 0.5f))
+            Divider(color = Color.Gray.copy(alpha = 0.5f))
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Social Media Buttons
+            // WhatsApp Button
             SocialButton(
                 icon = R.drawable.ic_whatsapp,
                 text = "WhatsApp",
-                onClick = { /* TODO Handle WhatsApp click */ },
+                onClick = {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/201009725548"))
+                    context.startActivity(intent)
+                },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Facebook Button
             SocialButton(
                 icon = R.drawable.ic_facebook,
                 text = "Facebook",
-                onClick = { /* TODO Handle website click */ },
+                onClick = {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/mohamed.ahmed.558343/"))
+                    context.startActivity(intent)
+                },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Website Button
             SocialButton(
                 icon = R.drawable.ic_globe,
                 text = "Website",
-                onClick = { /* TODO Handle Facebook click */ },
+                onClick = {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://bio.link/phishaware"))
+                    context.startActivity(intent)
+                },
             )
         }
     }
@@ -130,8 +141,7 @@ fun SocialButton(
             Icon(
                 painter = painterResource(id = icon),
                 contentDescription = text,
-                modifier = Modifier
-                    .size(24.dp),
+                modifier = Modifier.size(24.dp),
                 tint = tint
             )
             Spacer(modifier = Modifier.width(16.dp))

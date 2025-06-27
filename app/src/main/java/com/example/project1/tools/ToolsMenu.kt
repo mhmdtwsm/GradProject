@@ -26,12 +26,13 @@ fun ToolsMenu(modifier: Modifier = Modifier, navController: NavController) {
             )
         }
     ) { innerPadding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(android.graphics.Color.parseColor("#101F31")))
                 .padding(innerPadding)
-                .padding(16.dp),
+                .padding(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Header
@@ -45,40 +46,43 @@ fun ToolsMenu(modifier: Modifier = Modifier, navController: NavController) {
 
             androidx.compose.material3.Divider(color = Color.White.copy(alpha = 1f))
 
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
-            // ✅ هنا نجمع الكروت في عمود منفصل ونضيف بينهم مسافة
+            // Cards
             Column(
-                verticalArrangement = Arrangement.spacedBy(35.dp), // المسافة بين الكروت
+                verticalArrangement = Arrangement.spacedBy(20.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Cards(
+                    iconId = R.drawable.ic_link,
+                    title = "URL Analyzer",
+                    onClick = { navController.navigate(Screen.UrlAnalyzer.route) }
+                )
+
+                Cards(
                     iconId = R.drawable.passwordgenerate,
                     title = "Password Generate",
-                    onClick = { navController.navigate(Screen.PasswordGenerate.route) })
+                    onClick = { navController.navigate(Screen.PasswordGenerate.route) }
+                )
 
                 Cards(
                     iconId = R.drawable.passwordcheck,
                     title = "Password Test",
-                    onClick = { navController.navigate(Screen.PasswordTest.route) })
+                    onClick = { navController.navigate(Screen.PasswordTest.route) }
+                )
 
                 Cards(
                     iconId = R.drawable.ic_education,
                     title = "Security Tips",
-                    onClick = { navController.navigate(Screen.SecurityTips.route) })
+                    onClick = { navController.navigate(Screen.SecurityTips.route) }
+                )
 
                 Cards(
                     iconId = R.drawable.ic_chat,
-                    title = "Chat with AI ",
-                    onClick = { navController.navigate(Screen.Chat.route) })
+                    title = "Chat with AI",
+                    onClick = { navController.navigate(Screen.Chat.route) }
+                )
             }
-
-            // Uncomment if needed
-//            Cards(
-//                iconId = R.drawable.locks,
-//                title = "Password Manager",
-//                onClick = { navController.navigate(Screen.Dashboard.route) }
-//            )
         }
     }
 }
