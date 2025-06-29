@@ -2,215 +2,188 @@ package com.example.project1.tools.passwordtest
 
 import android.content.ClipboardManager
 import android.content.Context
-import android.widget.Toast
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.project1.R
-import com.example.project1.home.BottomNavigationBar
+import com.example.project1.ui.theme.Project1Theme
+import com.example.project1.ui.theme.customColors
 import java.util.regex.Pattern
 
-fun checkPasswordStrength(input: String): Pair<String, Color> {
-    var score = 0
+// --- Logic Layer (No UI dependencies) ---
 
-    // 1. Length Check
-    when {
-        input.length < 8 -> score += 0
-        input.length in 8..11 -> score += 5
-        input.length in 12..15 -> score += 15
-        input.length >= 16 -> score += 20
+enum class StrengthLevel {
+    NEUTRAL, WEAK, MODERATE, STRONG, VERY_STRONG
+}
+
+data class StrengthResult(
+    val message: String,
+    val level: StrengthLevel
+)
+
+fun checkPasswordStrength(input: String): StrengthResult {
+    if (input.isEmpty()) {
+        return StrengthResult("Use 8+ characters.\nAdd Aa, 123, @#!.\nAvoid names/dates.", StrengthLevel.NEUTRAL)
     }
 
-    // 2. Character Variety Check
+    var score = 0
+    // Length Check
+    when {
+        input.length < 8 -> score += 0
+        input.length in 8..11 -> score += 10
+        input.length >= 12 -> score += 20
+    }
+
+    // Character Variety Check
     val hasLower = input.any { it.isLowerCase() }
     val hasUpper = input.any { it.isUpperCase() }
     val hasDigit = input.any { it.isDigit() }
     val hasSymbol = input.any { !it.isLetterOrDigit() }
-
-    when {
-        hasLower && hasUpper && hasDigit && hasSymbol -> score += 20
-        hasLower && hasUpper && hasDigit -> score += 10
-        hasLower && hasUpper -> score += 5
-        else -> score += 0
+    if (listOf(hasLower, hasUpper, hasDigit, hasSymbol).count { it } >= 3) {
+        score += 20
     }
 
-    // 3. Repetitions & Patterns Check
-    val repeatedPattern = Pattern.compile("(.)\\1{3,}") // Detects repeated characters
-    val commonPatterns =
-        listOf("123456", "qwerty", "abcdef", "111111", "password", "admin", "letmein")
-
-    if (repeatedPattern.matcher(input).find()) score -= 10
-    if (commonPatterns.any { input.contains(it, ignoreCase = true) }) score -= 10
-
-    // 4. Dictionary & Common Words Check
-    val weakWords = listOf("password", "admin", "welcome", "hello", "letmein")
-    if (weakWords.any { input.contains(it, ignoreCase = true) }) score -= 15
+    // Patterns and Common Words Check
+    if (Pattern.compile("(.)\\1{2,}").matcher(input).find()) score -= 10
+    val commonPatterns = listOf("123", "abc", "qwerty", "password", "admin")
+    if (commonPatterns.any { input.contains(it, ignoreCase = true) }) score -= 15
 
     // Determine Strength
     return when {
-        score <= 10 -> Pair("❌ Weak\nUse more variety and avoid common words.", Color.Red)
-        score in 11..30 -> Pair(
-            "⚠️ Moderate\nTry adding symbols and increasing length.",
-            Color.Yellow
-        )
-
-        score in 31..50 -> Pair("✅ Strong\nGood job!", Color.Green)
-        else -> Pair("🏆 Very Strong!\nYour password is well-protected.", Color.Blue)
+        score < 15 -> StrengthResult("Weak\nMore variety & length needed.", StrengthLevel.WEAK)
+        score < 30 -> StrengthResult("Moderate\nGood, but can be stronger.", StrengthLevel.MODERATE)
+        score < 40 -> StrengthResult("Strong\nThis is a solid password.", StrengthLevel.STRONG)
+        else -> StrengthResult("Very Strong!\nExcellent protection.", StrengthLevel.VERY_STRONG)
     }
 }
 
-fun pasteFromClipboard(context: Context): String? {
-    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    val clipData = clipboard.primaryClip
-    return if (clipData != null && clipData.itemCount > 0) {
-        clipData.getItemAt(0).text.toString()
-    } else {
-        Toast.makeText(context, "Clipboard is empty!", Toast.LENGTH_SHORT).show()
-        null
-    }
-}
+// --- UI Layer ---
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PasswordTest(navController: NavController) {
+fun PasswordTestScreen(navController: NavController) {
     var password by remember { mutableStateOf("") }
-    var passwordStrength by remember { mutableStateOf("Use 8+ characters.\nAdd Aa, 123, @#!.\nAvoid names/dates.") }
-    var backgroundColor by remember { mutableStateOf(Color.Gray) }
+    var strengthResult by remember { mutableStateOf(checkPasswordStrength("")) }
     val context = LocalContext.current
 
-    // Effect to automatically paste and test clipboard content when screen opens
-//    LaunchedEffect(Unit) {
-//        pasteFromClipboard(context)?.let { clipboardContent ->
-//            password = clipboardContent
-//            val (strength, color) = checkPasswordStrength(clipboardContent)
-//            passwordStrength = strength
-//            backgroundColor = color
-//        }
-//    }
-    androidx.compose.material3.Scaffold(
-        bottomBar = {
-            BottomNavigationBar(
-                navController = navController,
-                selectedScreen = Screen.PasswordTest.route
+    val strengthColors = when (strengthResult.level) {
+        StrengthLevel.NEUTRAL -> CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        StrengthLevel.WEAK -> CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.onErrorContainer
+        )
+        StrengthLevel.MODERATE -> CardDefaults.cardColors(
+            containerColor = MaterialTheme.customColors.warningContainer,
+            contentColor = MaterialTheme.customColors.onWarningContainer
+        )
+        StrengthLevel.STRONG -> CardDefaults.cardColors(
+            containerColor = MaterialTheme.customColors.successContainer,
+            contentColor = MaterialTheme.customColors.onSuccessContainer
+        )
+        StrengthLevel.VERY_STRONG -> CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Password Strength Test") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         }
     ) { innerPadding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(android.graphics.Color.parseColor("#101F31")))
                 .padding(innerPadding)
-                .padding(16.dp),
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            // Top Bar with Back Button
-            Row(
+            // Strength Indicator Card
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.arrow),
-                    contentDescription = "Back",
-                    modifier = Modifier
-                        .size(30.dp)
-                        .clickable { navController.navigate(Screen.ToolsMenu.route) }
-                )
-                Spacer(modifier = Modifier.weight(0.69f))
-                Text(
-                    "Password Test",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.weight(1f))
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-            androidx.compose.material3.Divider(color = Color.Gray.copy(alpha = 0.5f))
-
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 100.dp, horizontal = 10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
+                    .defaultMinSize(minHeight = 120.dp),
+                shape = MaterialTheme.shapes.large,
+                colors = strengthColors
             ) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .background(Color.LightGray, shape = RoundedCornerShape(16.dp))
-                        .padding(16.dp)
+                    modifier = Modifier.fillMaxSize().padding(16.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = passwordStrength,
-                        style = TextStyle(fontSize = 16.sp, color = Color.Black),
-                        modifier = Modifier.align(Alignment.Center),
+                        text = strengthResult.message,
+                        style = MaterialTheme.typography.titleMedium,
                         textAlign = TextAlign.Center,
                     )
                 }
+            }
 
-                Spacer(modifier = Modifier.height(24.dp))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.Gray, shape = RoundedCornerShape(12.dp))
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextField(
-                        value = password,
-                        onValueChange = { newPassword ->
-                            password = newPassword
-                            val (strength, color) = checkPasswordStrength(newPassword)
-                            passwordStrength = strength
-                            backgroundColor = color
-                        },
-                        singleLine = true,
-                        modifier = Modifier.weight(1f),
-                        colors = TextFieldDefaults.textFieldColors(
-                            backgroundColor = Color.Transparent,
-                            textColor = Color.White
-                        )
-                    )
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Password Input Field
+            OutlinedTextField(
+                value = password,
+                onValueChange = {
+                    password = it
+                    strengthResult = checkPasswordStrength(it)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Enter password to test") },
+                placeholder = { Text("P@ssw0rd!123") },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.customColors.inputBackground,
+                    unfocusedContainerColor = MaterialTheme.customColors.inputBackground,
+                    focusedTextColor = MaterialTheme.customColors.onInputBackground,
+                    unfocusedTextColor = MaterialTheme.customColors.onInputBackground,
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                ),
+                trailingIcon = {
                     IconButton(onClick = {
-                        pasteFromClipboard(context)?.let { clipboardContent ->
-                            password = clipboardContent
-                            val (strength, color) = checkPasswordStrength(clipboardContent)
-                            passwordStrength = strength
-                            backgroundColor = color
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        clipboard.primaryClip?.getItemAt(0)?.text?.toString()?.let {
+                            password = it
+                            strengthResult = checkPasswordStrength(it)
                         }
                     }) {
                         Icon(
                             painter = painterResource(id = R.drawable.clipboard),
                             contentDescription = "Paste",
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+            )
         }
     }
 }
@@ -218,5 +191,7 @@ fun PasswordTest(navController: NavController) {
 @Preview(showBackground = true)
 @Composable
 fun PasswordTestPreview() {
-    PasswordTest(navController = NavController(LocalContext.current))
+    Project1Theme {
+        PasswordTestScreen(navController = rememberNavController())
+    }
 }

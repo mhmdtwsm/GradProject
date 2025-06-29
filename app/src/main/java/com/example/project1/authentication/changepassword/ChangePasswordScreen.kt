@@ -1,264 +1,236 @@
 package com.example.project1.authentication.resetpassword
 
 import android.widget.Toast
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.project1.R
 import com.example.project1.authentication.CommonComponents.StandardTextField
-import com.example.project1.home.BottomNavigationBar
+import com.example.project1.ui.theme.Project1Theme
+import com.example.project1.ui.theme.customColors
 import com.example.project1.viewmodel.ChangePasswordViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChangePasswordScreen(
     navController: NavController,
     viewModel: ChangePasswordViewModel = viewModel()
 ) {
+    val context = LocalContext.current
+    val uiState = remember { viewModel }
 
-    Scaffold()
-    { innerPadding ->
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(android.graphics.Color.parseColor("#101F31")))
-                .padding(innerPadding)
-                .padding(16.dp),
-        ) {
-            // Top Bar with Back Button
-            Row(
+    Project1Theme {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Change Password") },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                    )
+                )
+            },
+        ) { innerPadding ->
+            LazyColumn(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.Start
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.arrow),
-                    contentDescription = "Back",
-                    modifier = Modifier
-                        .size(30.dp)
-                        .clickable { navController.popBackStack() }
-                )
-                Spacer(modifier = Modifier.weight(0.69f))
-                androidx.compose.material.Text(
-                    "Change Password",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.weight(1f))
-            }
+                item { Spacer(modifier = Modifier.height(24.dp)) }
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Divider(color = Color.Gray.copy(alpha = 0.5f))
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Old Password Field
-            Text(
-                text = "Enter Old Password",
-                color = Color.White,
-                fontSize = 16.sp,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            StandardTextField(
-                value = viewModel.oldPassword,
-                onValueChange = { viewModel.oldPassword = it },
-                hint = "Password",
-                leadingIcon = {
-                    Icon(
-                        Icons.Default.Lock,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-                },
-                trailingIcon = {
-                    IconButton(onClick = {
-                        viewModel.oldPasswordVisible = !viewModel.oldPasswordVisible
-                    }) {
-                        Icon(
-                            painterResource(id = if (viewModel.oldPasswordVisible) R.drawable.eyeslash else R.drawable.eyenorm),
-                            contentDescription = if (viewModel.oldPasswordVisible) "Hide password" else "Show password",
-                            tint = Color.White
-                        )
-                    }
-                },
-                isPassword = !viewModel.oldPasswordVisible,
-                keyboardType = KeyboardType.Password
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // New Password Field
-            Text(
-                text = "Enter New Password",
-                color = Color.White,
-                fontSize = 16.sp,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            StandardTextField(
-                value = viewModel.newPassword,
-                onValueChange = { viewModel.newPassword = it },
-                hint = "Password",
-                leadingIcon = {
-                    Icon(
-                        Icons.Default.Lock,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-                },
-                trailingIcon = {
-                    IconButton(onClick = {
-                        viewModel.newPasswordVisible = !viewModel.newPasswordVisible
-                    }) {
-                        Icon(
-                            painterResource(id = if (viewModel.newPasswordVisible) R.drawable.eyeslash else R.drawable.eyenorm),
-                            contentDescription = if (viewModel.newPasswordVisible) "Hide password" else "Show password",
-                            tint = Color.White
-                        )
-                    }
-                },
-                isPassword = !viewModel.newPasswordVisible,
-                keyboardType = KeyboardType.Password
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Confirm New Password Field
-            Text(
-                text = "Confirm New Password",
-                color = Color.White,
-                fontSize = 16.sp,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            StandardTextField(
-                value = viewModel.confirmPassword,
-                onValueChange = { viewModel.confirmPassword = it },
-                hint = "Password",
-                leadingIcon = {
-                    Icon(
-                        Icons.Default.Lock,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-                },
-                trailingIcon = {
-                    IconButton(onClick = {
-                        viewModel.confirmPasswordVisible = !viewModel.confirmPasswordVisible
-                    }) {
-                        Icon(
-                            painterResource(id = if (viewModel.confirmPasswordVisible) R.drawable.eyeslash else R.drawable.eyenorm),
-                            contentDescription = if (viewModel.confirmPasswordVisible) "Hide password" else "Show password",
-                            tint = Color.White
-                        )
-                    }
-                },
-                isPassword = !viewModel.confirmPasswordVisible,
-                keyboardType = KeyboardType.Password
-            )
-
-            // Display error message if there is one
-            if (viewModel.errorMessage.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = viewModel.errorMessage,
-                    color = Color.Red,
-                    fontSize = 14.sp
-                )
-            }
-
-            // Display success message if there is one
-            if (viewModel.successMessage.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = viewModel.successMessage,
-                    color = Color.Green,
-                    fontSize = 14.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            val context = LocalContext.current
-            // Update Password Button
-            Button(
-                onClick = {
-                    viewModel.changePassword(
-                        context = context,
-                        onSuccess = {
-                            navController.popBackStack()
-                            Toast.makeText(
-                                context,
-                                "Password updated successfully",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        },
-                    )
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF76808A)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                enabled = !viewModel.isLoading
-            ) {
-                if (viewModel.isLoading) {
-                    CircularProgressIndicator(
-                        color = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                } else {
+                // Old Password
+                item {
                     Text(
-                        text = "Update Password",
-                        fontSize = 16.sp,
-                        color = Color.White,
+                        text = "Enter Old Password",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    StandardTextField(
+                        value = uiState.oldPassword,
+                        onValueChange = { uiState.oldPassword = it },
+                        hint = "Password",
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { uiState.oldPasswordVisible = !uiState.oldPasswordVisible }) {
+                                Icon(
+                                    painterResource(id = if (uiState.oldPasswordVisible) R.drawable.eyeslash else R.drawable.eyenorm),
+                                    contentDescription = if (uiState.oldPasswordVisible) "Hide password" else "Show password",
+                                    tint = MaterialTheme.colorScheme.primary // Use a primary color for interactive icons
+                                )
+                            }
+                        },
+                        isPassword = !uiState.oldPasswordVisible,
+                        keyboardType = KeyboardType.Password
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                // New Password
+                item {
+                    Text(
+                        text = "Enter New Password",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    StandardTextField(
+                        value = uiState.newPassword,
+                        onValueChange = { uiState.newPassword = it },
+                        hint = "Password",
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { uiState.newPasswordVisible = !uiState.newPasswordVisible }) {
+                                Icon(
+                                    painterResource(id = if (uiState.newPasswordVisible) R.drawable.eyeslash else R.drawable.eyenorm),
+                                    contentDescription = if (uiState.newPasswordVisible) "Hide password" else "Show password",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        },
+                        isPassword = !uiState.newPasswordVisible,
+                        keyboardType = KeyboardType.Password
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                // Confirm New Password
+                item {
+                    Text(
+                        text = "Confirm New Password",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    StandardTextField(
+                        value = uiState.confirmPassword,
+                        onValueChange = { uiState.confirmPassword = it },
+                        hint = "Password",
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { uiState.confirmPasswordVisible = !uiState.confirmPasswordVisible }) {
+                                Icon(
+                                    painterResource(id = if (uiState.confirmPasswordVisible) R.drawable.eyeslash else R.drawable.eyenorm),
+                                    contentDescription = if (uiState.confirmPasswordVisible) "Hide password" else "Show password",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        },
+                        isPassword = !uiState.confirmPasswordVisible,
+                        keyboardType = KeyboardType.Password
                     )
                 }
+
+                // Error and Success Messages
+                item {
+                    if (uiState.errorMessage.isNotEmpty()) {
+                        Text(
+                            text = uiState.errorMessage,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+                    if (uiState.successMessage.isNotEmpty()) {
+                        Text(
+                            text = uiState.successMessage,
+                            color = MaterialTheme.customColors.success,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+                }
+
+                item { Spacer(modifier = Modifier.height(32.dp)) }
+
+                // Update Password Button
+                item {
+                    Button(
+                        onClick = {
+                            viewModel.changePassword(
+                                context = context,
+                                onSuccess = {
+                                    Toast.makeText(context, "Password updated successfully", Toast.LENGTH_SHORT).show()
+                                    navController.popBackStack()
+                                },
+                            )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        enabled = !uiState.isLoading,
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        if (uiState.isLoading) {
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(
+                                text = "Update Password",
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                        }
+                    }
+                }
+
+                item { Spacer(modifier = Modifier.height(16.dp)) }
             }
         }
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun ChangePasswordScreenPreview() {
-    ChangePasswordScreen(navController = NavController(LocalContext.current))
+    Project1Theme {
+        ChangePasswordScreen(navController = rememberNavController())
+    }
 }

@@ -7,12 +7,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -25,7 +24,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.project1.SMS.SMSData.SMSHistoryItem
 import com.example.project1.home.BottomNavigationBar
-//import com.example.project1.home.Screen
+import com.example.project1.ui.theme.customColors
 import com.example.project1.viewmodel.SMSViewModel
 
 @Composable
@@ -36,7 +35,7 @@ fun SMSScreen(navController: NavController) {
     val isLoading by viewModel.isLoading.collectAsState()
     val context = LocalContext.current
 
-    androidx.compose.material3.Scaffold(
+    Scaffold(
         bottomBar = {
             BottomNavigationBar(
                 navController = navController,
@@ -44,26 +43,23 @@ fun SMSScreen(navController: NavController) {
             )
         }
     ) { innerPadding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(android.graphics.Color.parseColor("#101F31")))
+                .background(MaterialTheme.colorScheme.background)
                 .padding(innerPadding)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
-
         ) {
             // Header
-            androidx.compose.material3.Text(
+            Text(
                 text = "SMS Scan",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(vertical = 16.dp)
             )
 
-            androidx.compose.material3.Divider(color = Color.Gray.copy(alpha = 0.5f))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -81,24 +77,27 @@ fun SMSScreen(navController: NavController) {
                     }
                 }
             )
-            Spacer(modifier = Modifier.height(24.dp))
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             // Check Button
             Button(
                 onClick = { viewModel.checkSMS() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp)
                     .height(50.dp),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color.Gray,
-                    contentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
+                enabled = !isLoading
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        color = Color.White,
-                        modifier = Modifier.size(24.dp)
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
                     )
                 } else {
                     Text(
@@ -109,13 +108,22 @@ fun SMSScreen(navController: NavController) {
                 }
             }
 
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "History",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.customColors.historyHeader,
+                modifier = Modifier.align(Alignment.Start)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
             // SMS History
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-                    .padding(top = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .weight(1f),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(smsHistory) { smsItem ->
                     SMSHistoryCard(smsItem = smsItem)
@@ -125,97 +133,97 @@ fun SMSScreen(navController: NavController) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SMSInputField(
     value: String,
     onValueChange: (String) -> Unit,
     onPasteClick: () -> Unit
 ) {
-    Box(
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        placeholder = { Text("Enter message to scan", color = MaterialTheme.customColors.hintText) },
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
-            .clip(RoundedCornerShape(28.dp))
-            .background(Color.White)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextField(
-                value = value,
-                onValueChange = onValueChange,
-                placeholder = { Text("message") },
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = Color.Black,
-                    textColor = Color.Black
-                ),
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .heightIn(min = 56.dp, max = 56.dp)
-            )
-
+            .height(120.dp), // Increased height for multi-line input
+        shape = RoundedCornerShape(16.dp),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = MaterialTheme.customColors.inputBackground,
+            unfocusedContainerColor = MaterialTheme.customColors.inputBackground,
+            cursorColor = MaterialTheme.customColors.onInputBackground,
+            focusedTextColor = MaterialTheme.customColors.onInputBackground,
+            unfocusedTextColor = MaterialTheme.customColors.onInputBackground,
+            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+            unfocusedIndicatorColor = MaterialTheme.customColors.inputBorder,
+        ),
+        trailingIcon = {
             IconButton(
                 onClick = onPasteClick,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier
+                    .padding(top = 8.dp)
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.clipboard), // Using link icon as clipboard
+                    painter = painterResource(id = R.drawable.clipboard),
                     contentDescription = "Paste from clipboard",
-                    tint = Color.Gray
+                    tint = MaterialTheme.customColors.onInputBackground.copy(alpha = 0.7f)
                 )
             }
-        }
-    }
+        },
+        singleLine = false
+    )
 }
 
 @Composable
 fun SMSHistoryCard(smsItem: SMSHistoryItem) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color.LightGray.copy(alpha = 0.8f))
-            .padding(16.dp)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.customColors.historyCard
+        )
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Display the actual message text
             Text(
                 text = smsItem.message,
-                color = Color.Black,
+                color = MaterialTheme.customColors.onHistoryCard,
                 fontSize = 14.sp,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 16.dp)
             )
 
-            // Status indicator
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-            ) {
-                val statusText = when {
-                    smsItem.isSafe == true -> "Safe"
-                    smsItem.isSafe == false -> "Unsafe"
-                    else -> "No connection"
-                }
+            val statusText: String
+            val statusColor: androidx.compose.ui.graphics.Color
 
-                Text(
-                    text = statusText,
-                    color = if (smsItem.isSafe == true) Color.Green else Color.Red,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.align(Alignment.CenterEnd)
-                )
+            when (smsItem.isSafe) {
+                true -> {
+                    statusText = "Safe"
+                    statusColor = MaterialTheme.customColors.success
+                }
+                false -> {
+                    statusText = "Unsafe"
+                    statusColor = MaterialTheme.customColors.danger
+                }
+                null -> {
+                    statusText = "No Connection"
+                    statusColor = MaterialTheme.colorScheme.onSurfaceVariant
+                }
             }
+
+            Text(
+                text = statusText,
+                color = statusColor,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.End
+            )
         }
     }
 }

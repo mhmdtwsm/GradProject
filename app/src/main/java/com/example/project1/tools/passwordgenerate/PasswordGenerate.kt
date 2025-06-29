@@ -1,34 +1,36 @@
 package com.example.project1.tools.passwordgenerate
 
+import Screen
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.project1.R
-import com.example.project1.home.BottomNavigationBar
+import com.example.project1.ui.theme.Project1Theme
+import com.example.project1.ui.theme.customColors
 import kotlin.random.Random
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PasswordGenerate(navController: NavController) {
-    var password by remember { mutableStateOf("pass@#12WORD") }
-    var passwordLength by remember { mutableStateOf(14f) }
+fun PasswordGenerateScreen(navController: NavController) {
+    var password by remember { mutableStateOf("P@ssw0rd!123") }
+    var passwordLength by remember { mutableStateOf(12f) }
     var upperCase by remember { mutableStateOf(true) }
     var lowerCase by remember { mutableStateOf(true) }
     var numbers by remember { mutableStateOf(true) }
@@ -36,202 +38,174 @@ fun PasswordGenerate(navController: NavController) {
 
     val clipboardManager = LocalClipboardManager.current
 
-    androidx.compose.material3.Scaffold(
-        bottomBar = {
-            BottomNavigationBar(
-                navController = navController,
-                selectedScreen = Screen.PasswordGenerate.route
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Password Generator") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         }
     ) { innerPadding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(android.graphics.Color.parseColor("#101F31")))
                 .padding(innerPadding)
-                .padding(16.dp),
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Top Bar with Back Button
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.arrow),
-                    contentDescription = "Back",
-                    modifier = Modifier
-                        .size(30.dp)
-                        .clickable { navController.navigate(Screen.ToolsMenu.route) }
-                )
-                Spacer(modifier = Modifier.weight(0.69f))
-                Text(
-                    "Password Generate",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.weight(1f))
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-            androidx.compose.material3.Divider(color = Color.Gray.copy(alpha = 0.5f))
-
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Password Display
-            TextField(
+            OutlinedTextField(
                 value = password,
                 onValueChange = { },
                 readOnly = true,
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color(0xFF1C2431),
-                    textColor = Color.White,
-                    focusedIndicatorColor = Color.Gray,
-                    unfocusedIndicatorColor = Color.Gray
+                label = { Text("Generated Password") },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.customColors.inputBackground,
+                    unfocusedContainerColor = MaterialTheme.customColors.inputBackground,
+                    disabledContainerColor = MaterialTheme.customColors.inputBackground,
+                    focusedTextColor = MaterialTheme.customColors.onInputBackground,
+                    unfocusedTextColor = MaterialTheme.customColors.onInputBackground,
+                    disabledTextColor = MaterialTheme.customColors.onInputBackground,
+                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.outline
                 ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                modifier = Modifier.fillMaxWidth()
             )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Password Length Slider
-            Text(
-                text = "Length: ${passwordLength.toInt()}",
-                color = Color.White,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-            Slider(
-                value = passwordLength,
-                onValueChange = { passwordLength = it },
-                valueRange = 4f..32f,
-                colors = SliderDefaults.colors(
-                    thumbColor = Color.White,
-                    activeTrackColor = Color.White
-                ),
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Options",
-                color = Color.White,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
-            // Password Options
-            PasswordOption(
-                text = "Upper case (A-Z)",
-                icon = R.drawable.ic_uppercase,
-                isChecked = upperCase,
-                onCheckedChange = { upperCase = it }
-            )
-
-            PasswordOption(
-                text = "Lower case (a-z)",
-                icon = R.drawable.ic_lowercase,
-                isChecked = lowerCase,
-                onCheckedChange = { lowerCase = it }
-            )
-
-            PasswordOption(
-                text = "Numbers",
-                icon = R.drawable.ic_numbers,
-                isChecked = numbers,
-                onCheckedChange = { numbers = it }
-            )
-
-            PasswordOption(
-                text = "Symbols(@#&$)",
-                icon = R.drawable.ic_symbols,
-                isChecked = symbols,
-                onCheckedChange = { symbols = it }
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Generate Button
-//        Button(
-//            onClick = {
-//                password = generatePassword(
-//                    length = passwordLength.toInt(),
-//                    useUpperCase = upperCase,
-//                    useLowerCase = lowerCase,
-//                    useNumbers = numbers,
-//                    useSymbols = symbols
-//                )
-//            },
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(horizontal = 16.dp),
-//            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF2E3B4E))
-//        ) {
-//            Text("Generate", color = Color.White)
-//        }
-
 
             // Action Buttons
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
             ) {
-                IconButton(
-                    onClick = { clipboardManager.setText(AnnotatedString(password)) },
-                    modifier = Modifier
-                        .background(Color(0xFF2E3B4E), RoundedCornerShape(15.dp))
-                        .padding(5.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_copy),
-                        contentDescription = "Copy",
-                        tint = Color.White
+                ActionButton(icon = R.drawable.ic_copy, description = "Copy") {
+                    clipboardManager.setText(AnnotatedString(password))
+                }
+                ActionButton(icon = R.drawable.ic_delete, description = "Clear") {
+                    password = ""
+                }
+                ActionButton(icon = R.drawable.ic_refresh, description = "Refresh") {
+                    password = generatePassword(
+                        length = passwordLength.toInt(),
+                        useUpperCase = upperCase,
+                        useLowerCase = lowerCase,
+                        useNumbers = numbers,
+                        useSymbols = symbols
                     )
                 }
+            }
 
-                IconButton(
-                    onClick = { password = "" },
-                    modifier = Modifier
-                        .background(Color(0xFF2E3B4E), RoundedCornerShape(15.dp))
-                        .padding(5.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_delete),
-                        contentDescription = "Clear",
-                        tint = Color.White
+            // Password Length Slider
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Length: ${passwordLength.toInt()}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Slider(
+                    value = passwordLength,
+                    onValueChange = { passwordLength = it },
+                    valueRange = 4f..32f,
+                    steps = 27, // (32 - 4) - 1
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
                     )
-                }
+                )
+            }
 
-                IconButton(
-                    onClick = {
-                        password = generatePassword(
-                            length = passwordLength.toInt(),
-                            useUpperCase = upperCase,
-                            useLowerCase = lowerCase,
-                            useNumbers = numbers,
-                            useSymbols = symbols
-                        )
-                    },
-                    modifier = Modifier
-                        .background(Color(0xFF2E3B4E), RoundedCornerShape(15.dp))
-                        .padding(5.dp)
+            // Password Options
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.customColors.cardBackground,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_refresh),
-                        contentDescription = "Refresh",
-                        tint = Color.White
+                    PasswordOption(
+                        text = "Upper case (A-Z)",
+                        isChecked = upperCase,
+                        onCheckedChange = { upperCase = it }
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    PasswordOption(
+                        text = "Lower case (a-z)",
+                        isChecked = lowerCase,
+                        onCheckedChange = { lowerCase = it }
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    PasswordOption(
+                        text = "Numbers (0-9)",
+                        isChecked = numbers,
+                        onCheckedChange = { numbers = it }
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    PasswordOption(
+                        text = "Symbols (@#&$)",
+                        isChecked = symbols,
+                        onCheckedChange = { symbols = it }
                     )
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ActionButton(icon: Int, description: String, onClick: () -> Unit) {
+    FilledTonalIconButton(
+        onClick = onClick,
+        modifier = Modifier.size(50.dp)
+    ) {
+        Icon(
+            painter = painterResource(id = icon),
+            contentDescription = description,
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+@Composable
+fun PasswordOption(
+    text: String,
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = text, style = MaterialTheme.typography.bodyLarge)
+        Switch(
+            checked = isChecked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        )
     }
 }
 
@@ -253,7 +227,7 @@ private fun generatePassword(
     if (useNumbers) allowedChars += numberChars
     if (useSymbols) allowedChars += symbolChars
 
-    if (allowedChars.isEmpty()) return ""
+    if (allowedChars.isEmpty()) return "Please select an option"
 
     return (1..length)
         .map { allowedChars[Random.nextInt(0, allowedChars.length)] }
@@ -263,5 +237,7 @@ private fun generatePassword(
 @Preview(showBackground = true)
 @Composable
 fun PasswordGeneratePreview() {
-    PasswordGenerate(navController = NavController(LocalContext.current))
+    Project1Theme {
+        PasswordGenerateScreen(navController = rememberNavController())
+    }
 }

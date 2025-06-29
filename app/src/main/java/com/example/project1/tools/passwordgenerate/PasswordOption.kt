@@ -1,4 +1,4 @@
-package com.example.project1.tools.passwordgenerate
+package com.example.project1.tools.passwordgenerate.temp
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

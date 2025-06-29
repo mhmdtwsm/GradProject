@@ -58,7 +58,7 @@ fun ForgotPasswordScreen(
                 PrimaryButton(
                     text = "Reset Password",
                     onClick = { onResetPasswordClick(email) },
-                            color = Color(0xFF4FC3F7)
+                    color = Color(0xFF4FC3F7),
                 )
             }
         }

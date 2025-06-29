@@ -2,10 +2,10 @@ package com.example.project1.authentication.login
 
 import android.util.Patterns
 import android.widget.Toast
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
@@ -15,19 +15,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.project1.R
 import com.example.project1.authentication.CommonComponents.StandardTextField
+import com.example.project1.ui.theme.Project1Theme
 import com.example.project1.viewmodel.LoginUiState
 import com.example.project1.viewmodel.LoginViewModel
 
@@ -35,10 +33,9 @@ import com.example.project1.viewmodel.LoginViewModel
 fun LoginScreen(
     onNavigateToRegister: () -> Unit,
     onNavigateToHome: () -> Unit,
-    onNavigateToForgotPassword: () -> Unit,
-    viewModel: LoginViewModel = viewModel(),
     navController: NavController
 ) {
+    val viewModel: LoginViewModel = viewModel()
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val fromLogin = true
@@ -50,7 +47,7 @@ fun LoginScreen(
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
 
-    // Handle login success
+    // Handle login success state
     LaunchedEffect(uiState) {
         if (uiState is LoginUiState.Success) {
             Toast.makeText(context, "Login Successful!", Toast.LENGTH_SHORT).show()
@@ -58,33 +55,39 @@ fun LoginScreen(
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(android.graphics.Color.parseColor("#101F31")))
-            .padding(horizontal = 16.dp)
-    ) {
+    Scaffold { innerPadding ->
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(50.dp))
+            Spacer(modifier = Modifier.height(80.dp))
 
-            // ✅ صورة تسجيل الدخول
-            Image(
-                painter = painterResource(id = R.drawable.login),
-                contentDescription = "Login illustration",
-                modifier = Modifier
-                    .size(250.dp)
-                    .padding(top = 25.dp)
-            )
+            // --- REPLACEMENT: Login Title ---
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Welcome Back!",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Log in to continue your session",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            // --- END REPLACEMENT ---
 
-
-
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(60.dp))
 
             // Email field
-            Text("Email", color = Color.White, fontSize = 16.sp, modifier = Modifier.fillMaxWidth())
             StandardTextField(
                 value = email,
                 onValueChange = {
@@ -92,23 +95,23 @@ fun LoginScreen(
                     emailError = null
                 },
                 hint = "Email",
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Email,
-                        contentDescription = "Email",
-                        tint = Color.White
-                    )
-                },
+                leadingIcon = { Icon(imageVector = Icons.Default.Email, contentDescription = "Email") },
                 keyboardType = KeyboardType.Email
             )
             emailError?.let {
-                Text(text = it, color = Color.Red, fontSize = 12.sp, modifier = Modifier.fillMaxWidth())
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, top = 4.dp)
+                )
             }
 
-            Spacer(modifier = Modifier.height(15.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Password field
-            Text("Password", color = Color.White, fontSize = 16.sp, modifier = Modifier.fillMaxWidth())
             StandardTextField(
                 value = password,
                 onValueChange = {
@@ -116,121 +119,119 @@ fun LoginScreen(
                     passwordError = null
                 },
                 hint = "Password",
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = "Password",
-                        tint = Color.White
-                    )
-                },
+                leadingIcon = { Icon(imageVector = Icons.Default.Lock, contentDescription = "Password") },
                 trailingIcon = {
-                    Icon(
-                        imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                        contentDescription = "Toggle password visibility",
-                        tint = Color.White,
-                        modifier = Modifier.clickable { passwordVisible = !passwordVisible }
-                    )
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            contentDescription = "Toggle password visibility"
+                        )
+                    }
                 },
                 isPassword = !passwordVisible,
                 keyboardType = KeyboardType.Password
             )
             passwordError?.let {
-                Text(text = it, color = Color.Red, fontSize = 12.sp, modifier = Modifier.fillMaxWidth())
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Forgot Password
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { navController.navigate("verifyemail/$fromLogin") },
-                horizontalArrangement = Arrangement.End
-            ) {
                 Text(
-                    text = "Forgot Password?",
-                    color = Color.White,
-                    fontSize = 12.sp
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, top = 4.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(30.dp))
+            // Forgot Password
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = { navController.navigate("verifyemail/$fromLogin") }) {
+                    Text(
+                        text = "Forgot Password?",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Login button
+            Button(
+                onClick = {
+                    var isValid = true
+                    if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                        emailError = "Enter a valid email"
+                        isValid = false
+                    }
+                    if (password.isEmpty()) {
+                        passwordError = "Password is required"
+                        isValid = false
+                    }
+                    if (isValid) {
+                        viewModel.login(email, password, context, onSuccess = {})
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                enabled = uiState !is LoginUiState.Loading,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            ) {
+                if (uiState is LoginUiState.Loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text("Login", style = MaterialTheme.typography.titleSmall)
+                }
+            }
 
             // Error message from ViewModel
             if (uiState is LoginUiState.Error) {
                 Text(
                     text = (uiState as LoginUiState.Error).message,
-                    color = Color.Red,
-                    fontSize = 14.sp
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(top = 8.dp)
                 )
-                Spacer(modifier = Modifier.height(10.dp))
             }
 
-            // Login button
-            Button(
-                onClick = {
-                    // Validation
-                    var valid = true
-                    if (email.isEmpty()) {
-                        emailError = "Email is required"
-                        valid = false
-                    } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                        emailError = "Enter a valid email"
-                        valid = false
-                    }
-                    if (password.isEmpty()) {
-                        passwordError = "Password is required"
-                        valid = false
-                    }
-
-                    if (valid) {
-                        viewModel.login(
-                            email = email,
-                            password = password,
-                            context = context,
-                            onSuccess = { /* Already handled by LaunchedEffect */ }
-                        )
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E3B4E)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                enabled = uiState !is LoginUiState.Loading
-            ) {
-                if (uiState is LoginUiState.Loading) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                } else {
-                    Text(text = "Login", fontSize = 16.sp, color = Color.White)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Sign up prompt
             Row {
-                Text(text = "Don't have an account? ", fontSize = 14.sp, color = Color.White)
+                Text(
+                    text = "Don't have an account? ",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
                 Text(
                     text = "Register",
-                    fontSize = 14.sp,
-                    color = Color(0xFF4FC3F7), // لون أزرق سماوي فاتح يليق بالخلفية                             fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.clickable { onNavigateToRegister() }
                 )
             }
         }
-
-
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen(
-        onNavigateToRegister = {},
-        onNavigateToHome = {},
-        onNavigateToForgotPassword = {},
-        navController = rememberNavController()
-    )
+    Project1Theme {
+        LoginScreen(
+            onNavigateToRegister = {},
+            onNavigateToHome = {},
+            navController = rememberNavController()
+        )
+    }
 }

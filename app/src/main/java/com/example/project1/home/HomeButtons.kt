@@ -1,21 +1,16 @@
-package com.example.project1.home
+package com.example.project1.home.temp
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -27,44 +22,43 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.project1.R
 import com.example.project1.statistics.StatisticsManager
 import com.example.project1.statistics.UserStatistics
-import java.lang.reflect.Method
+import com.example.project1.ui.theme.customColors
 
 @Composable
 fun HomeButtons(title: String, icon: Int, iconSize: Int = 70, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(12.dp),
-        elevation = 8.dp,
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.customColors.cardBackground // Use theme color
+        ),
         modifier = Modifier
             .size(width = 150.dp, height = 180.dp)
-            .shadow(8.dp, RoundedCornerShape(12.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFF1C2431))
-                .border(3.dp, Color.Gray, RoundedCornerShape(12.dp)),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
                 painter = painterResource(id = icon),
                 contentDescription = title,
-                tint = Color.White,
+                tint = MaterialTheme.colorScheme.onSurface, // Use theme color
                 modifier = Modifier.size(iconSize.dp)
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = title,
-                color = Color.White,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.labelLarge, // Use typography from theme
+                color = MaterialTheme.colorScheme.onSurface, // Use theme color
+                textAlign = TextAlign.Center
             )
         }
     }
@@ -73,73 +67,60 @@ fun HomeButtons(title: String, icon: Int, iconSize: Int = 70, onClick: () -> Uni
 @Composable
 fun HomeButtonsWithChart(
     title: String,
-    icon: Int,
-    iconSize: Int = 70,
-    isUrlChart: Boolean = true,
+    isUrlChart: Boolean,
     onClick: () -> Unit
 ) {
-    // Get statistics from StatisticsManager
     val context = LocalContext.current
     val statisticsManager = StatisticsManager.getInstance(context)
     val statistics by statisticsManager.statistics.collectAsState(initial = null)
 
     Card(
         shape = RoundedCornerShape(12.dp),
-        elevation = 8.dp,
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.customColors.cardBackground // Use theme color
+        ),
         modifier = Modifier
             .size(width = 150.dp, height = 180.dp)
-            .shadow(8.dp, RoundedCornerShape(12.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFF1C2431))
-                .border(3.dp, Color.Gray, RoundedCornerShape(12.dp)),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
                 text = title,
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleSmall, // Use typography
+                color = MaterialTheme.colorScheme.onSurface, // Use color
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
 
             Box(
                 modifier = Modifier.size(100.dp),
                 contentAlignment = Alignment.Center
             ) {
-                // Draw the pie chart
                 PieChart(
                     statistics = statistics,
                     isUrlChart = isUrlChart
                 )
 
-                // Display the ratio as text
                 val ratio = if (isUrlChart) {
                     if (statistics != null && statistics!!.totalUrls > 0) {
                         "${statistics!!.safeUrls}/${statistics!!.totalUrls}"
-                    } else {
-                        "0/0"
-                    }
+                    } else "0/0"
                 } else {
                     if (statistics != null && statistics!!.totalSms > 0) {
                         "${statistics!!.safeSms}/${statistics!!.totalSms}"
-                    } else {
-                        "0/0"
-                    }
+                    } else "0/0"
                 }
 
                 Text(
                     text = ratio,
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -147,71 +128,43 @@ fun HomeButtonsWithChart(
 }
 
 @Composable
-fun PieChart(
-    statistics: UserStatistics?,
-    isUrlChart: Boolean
-) {
-    val safeColor = Color(0xFF2182CC) // Dark Green
-    val unsafeColor = Color(0xFF000000) // Black
-    val backgroundColor = Color(0xFF808080) // Gray
+fun PieChart(statistics: UserStatistics?, isUrlChart: Boolean) {
+    // Using semantic colors from the theme for the chart
+    val safeColor = MaterialTheme.customColors.success
+    val unsafeColor = MaterialTheme.customColors.danger
+    val backgroundColor = MaterialTheme.colorScheme.surfaceVariant
+    val donutHoleColor = MaterialTheme.customColors.cardBackground
 
     Canvas(modifier = Modifier.size(100.dp)) {
-        val canvasWidth = size.width
-        val canvasHeight = size.height
-        val radius = minOf(canvasWidth, canvasHeight) / 2
-        val center = Offset(canvasWidth / 2, canvasHeight / 2)
+        val radius = size.minDimension / 2
+        val center = Offset(size.width / 2, size.height / 2)
 
-        // Draw background circle
-        drawCircle(
-            color = backgroundColor,
-            radius = radius,
-            center = center
-        )
+        drawCircle(color = backgroundColor, radius = radius, center = center)
 
-        // Calculate the sweep angle based on statistics
-        val sweepAngle = if (isUrlChart) {
-            if (statistics != null && statistics.totalUrls > 0) {
-                360f * statistics.safeUrls / statistics.totalUrls
-            } else {
-                0f
-            }
-        } else {
-            if (statistics != null && statistics.totalSms > 0) {
-                360f * statistics.safeSms / statistics.totalSms
-            } else {
-                0f
-            }
-        }
+        val total = (if (isUrlChart) statistics?.totalUrls else statistics?.totalSms) ?: 0
+        val safeCount = (if (isUrlChart) statistics?.safeUrls else statistics?.safeSms) ?: 0
 
-        // Draw the pie slice for safe percentage
+        val sweepAngle = if (total > 0) 360f * safeCount / total else 0f
+
         if (sweepAngle > 0) {
             drawArc(
                 color = safeColor,
-                startAngle = 0f,
+                startAngle = -90f, // Start from the top
                 sweepAngle = sweepAngle,
-                useCenter = true,
-                topLeft = Offset(center.x - radius, center.y - radius),
-                size = Size(radius * 2, radius * 2)
+                useCenter = true
             )
         }
 
-        // Draw the pie slice for unsafe percentage
         if (sweepAngle < 360) {
             drawArc(
                 color = unsafeColor,
-                startAngle = sweepAngle,
+                startAngle = -90f + sweepAngle,
                 sweepAngle = 360f - sweepAngle,
-                useCenter = true,
-                topLeft = Offset(center.x - radius, center.y - radius),
-                size = Size(radius * 2, radius * 2)
+                useCenter = true
             )
         }
 
-        // Draw a smaller circle in the middle to create a donut chart effect
-        drawCircle(
-            color = Color(0xFF1C2431), // Background color of the card
-            radius = radius * 0.5f,
-            center = center
-        )
+        // Create the donut hole
+        drawCircle(color = donutHoleColor, radius = radius * 0.6f, center = center)
     }
 }

@@ -1,51 +1,48 @@
 package com.example.project1.home
 
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
+import Screen // Make sure to import your Screen sealed class
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.project1.R
+import com.example.project1.ui.theme.Project1Theme
 
 @Composable
-fun BottomNavigationBar(navController: NavController, selectedScreen: String, txtSize: Int = 10) {
-    BottomNavigation(
-        backgroundColor = Color(0xFF1C2431),
-        contentColor = Color.White,
+fun BottomNavigationBar(navController: NavController, selectedScreen: String) {
+    val drawlineColor = MaterialTheme.colorScheme.outline
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.surface,
         modifier = Modifier
-            .padding(vertical = 5.dp)
             .zIndex(1f)
             .drawBehind {
-                val strokeWidth = 2.dp.toPx()
+                val strokeWidth = 1.dp.toPx()
                 drawLine(
-                    color = Color.White,
+                    color = drawlineColor,
                     start = Offset(0f, 0f),
                     end = Offset(size.width, 0f),
                     strokeWidth = strokeWidth
                 )
             },
     ) {
-
         fun navigateIfNotCurrent(route: String) {
             if (selectedScreen != route) {
                 navController.navigate(route) {
                     launchSingleTop = true
+                    // This logic restores the back stack state, which is good practice
                     popUpTo(navController.graph.startDestinationId) {
                         saveState = true
                     }
@@ -54,109 +51,83 @@ fun BottomNavigationBar(navController: NavController, selectedScreen: String, tx
             }
         }
 
-        BottomNavigationItem(
-            icon = {
-                Icon(
-                    painterResource(id = R.drawable.ic_home),
-                    contentDescription = "Home",
-                    modifier = Modifier.size(40.dp),
-                    tint = if (selectedScreen == Screen.Home.route) Color.White else Color.Gray
-                )
-            },
-            label = {
-                Text(
-                    fontWeight = FontWeight.Bold,
-                    text = "Home",
-                    fontSize = txtSize.sp
-                )
-            },
+        // Common colors for all navigation items
+        val itemColors = NavigationBarItemDefaults.colors(
+            selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            selectedTextColor = MaterialTheme.colorScheme.onSurface,
+            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            indicatorColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+
+        // Home Item
+        NavigationBarItem(
             selected = selectedScreen == Screen.Home.route,
-            modifier = Modifier.padding(vertical = 5.dp),
-            onClick = { navigateIfNotCurrent(Screen.Home.route) }
+            onClick = { navigateIfNotCurrent(Screen.Home.route) },
+            icon = { Icon(painterResource(id = R.drawable.ic_home), "Home", Modifier.size(28.dp)) },
+            label = { Text("Home", style = MaterialTheme.typography.labelSmall) },
+            colors = itemColors
         )
 
-        BottomNavigationItem(
-            icon = {
-                Icon(
-                    painterResource(id = R.drawable.ic_link),
-                    contentDescription = "URL",
-                    modifier = Modifier.size(40.dp),
-                    tint = if (selectedScreen == Screen.URL.route) Color.White else Color.Gray
-                )
-            },
-            label = {
-                Text(
-                    fontWeight = FontWeight.Bold,
-                    text = "URL",
-                    fontSize = txtSize.sp
-                )
-            },
+        // URL Item
+        NavigationBarItem(
             selected = selectedScreen == Screen.URL.route,
-            modifier = Modifier.padding(vertical = 5.dp),
-            onClick = { navigateIfNotCurrent(Screen.URL.route) }
+            onClick = { navigateIfNotCurrent(Screen.URL.route) },
+            icon = { Icon(painterResource(id = R.drawable.ic_link), "URL", Modifier.size(28.dp)) },
+            label = { Text("URL", style = MaterialTheme.typography.labelSmall) },
+            colors = itemColors
         )
 
-        BottomNavigationItem(
-            icon = {
-                Icon(
-                    painterResource(id = R.drawable.ic_message),
-                    contentDescription = "SMS",
-                    modifier = Modifier.size(40.dp),
-                    tint = if (selectedScreen == Screen.SMS.route) Color.White else Color.Gray
-                )
-            },
-            label = {
-                Text(
-                    fontWeight = FontWeight.Bold,
-                    text = "SMS",
-                    fontSize = txtSize.sp
-                )
-            },
+        // SMS Item
+        NavigationBarItem(
             selected = selectedScreen == Screen.SMS.route,
-            modifier = Modifier.padding(vertical = 5.dp),
-            onClick = { navigateIfNotCurrent(Screen.SMS.route) }
+            onClick = { navigateIfNotCurrent(Screen.SMS.route) },
+            icon = { Icon(painterResource(id = R.drawable.ic_message), "SMS", Modifier.size(28.dp)) },
+            label = { Text("SMS", style = MaterialTheme.typography.labelSmall) },
+            colors = itemColors
         )
 
-        BottomNavigationItem(
-            icon = {
-                Icon(
-                    painterResource(id = R.drawable.ic_tools),
-                    contentDescription = "Tools",
-                    modifier = Modifier.size(40.dp),
-                    tint = if (selectedScreen == Screen.ToolsMenu.route) Color.White else Color.Gray
-                )
-            },
-            label = {
-                Text(
-                    text = "Tools",
-                    fontSize = txtSize.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            },
+        // Tools Item - Using the CORRECT route
+        NavigationBarItem(
             selected = selectedScreen == Screen.ToolsMenu.route,
-            modifier = Modifier.padding(vertical = 5.dp),
-            onClick = { navigateIfNotCurrent(Screen.ToolsMenu.route) }
+            onClick = { navigateIfNotCurrent(Screen.ToolsMenu.route) }, // CORRECTED
+            icon = { Icon(painterResource(id = R.drawable.ic_tools), "Tools", Modifier.size(28.dp)) },
+            label = { Text("Tools", style = MaterialTheme.typography.labelSmall) },
+            colors = itemColors
         )
 
-        BottomNavigationItem(
-            icon = {
-                Icon(
-                    painterResource(id = R.drawable.ic_settings),
-                    contentDescription = "Settings",
-                    modifier = Modifier.size(40.dp),
-                    tint = if (selectedScreen == Screen.Settings.route) Color.White else Color.Gray
-                )
-            },
-            label = {
-                Text(
-                    text = "Settings",
-                    fontSize = txtSize.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            },
+        // Settings Item
+        NavigationBarItem(
             selected = selectedScreen == Screen.Settings.route,
-            modifier = Modifier.padding(vertical = 5.dp),
-            onClick = { navigateIfNotCurrent(Screen.Settings.route) }
+            onClick = { navigateIfNotCurrent(Screen.Settings.route) },
+            icon = { Icon(painterResource(id = R.drawable.ic_settings), "Settings", Modifier.size(28.dp)) },
+            label = { Text("Settings", style = MaterialTheme.typography.labelSmall) },
+            colors = itemColors
+        )
+    }
+}
+
+
+@Preview(name = "BottomNav Dark")
+@Composable
+fun BottomNavigationBarDarkPreview() {
+    Project1Theme() {
+        // We pass the route string from our sealed class for the preview
+        BottomNavigationBar(
+            navController = rememberNavController(),
+            selectedScreen = Screen.Home.route
+        )
+    }
+}
+
+@Preview(name = "BottomNav Light")
+@Composable
+fun BottomNavigationBarLightPreview() {
+    Project1Theme() {
+        // We pass the route string from our sealed class for the preview
+        BottomNavigationBar(
+            navController = rememberNavController(),
+            selectedScreen = Screen.Home.route
         )
     }
 }

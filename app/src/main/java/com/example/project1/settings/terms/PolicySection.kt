@@ -1,4 +1,4 @@
-package com.example.project1.settings.terms
+package com.example.project1.settings.terms.temp
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

@@ -1,7 +1,5 @@
 package com.example.project1.authentication.register
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -10,23 +8,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.project1.DataStoreManager
-import com.example.project1.R
 import com.example.project1.authentication.CommonComponents.StandardTextField
+import com.example.project1.ui.theme.Project1Theme
 import com.example.project1.viewmodel.RegisterViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,185 +30,134 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun RegisterScreen(
-    modifier: Modifier = Modifier,
     onNavigateToLogin: () -> Unit,
-    onNavigateToVerifyOTP: () -> Unit, // Changed back to no parameters since we store email in SharedPreferences
+    onNavigateToVerifyOTP: () -> Unit,
     viewModel: RegisterViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
 
-    // Clear error message when user starts interacting
     LaunchedEffect(viewModel.name, viewModel.email, viewModel.password, viewModel.confirmPassword) {
         if (viewModel.errorMessage.isNotEmpty()) {
             viewModel.clearError()
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(android.graphics.Color.parseColor("#101F30")))
-    ) {
+    Scaffold { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(innerPadding)
+                .padding(horizontal = 24.dp)
                 .verticalScroll(scrollState),
-            verticalArrangement = Arrangement.SpaceAround
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Header with illustration
+            Spacer(modifier = Modifier.height(80.dp))
+
+            // --- REPLACEMENT: Register Title ---
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(50.dp))
-                Image(
-                    painter = painterResource(id = R.drawable.register),
-                    contentDescription = "Register illustration",
-                    modifier = Modifier
-                        .size(230.dp)
-                        .padding(top = 16.dp)
+                Text(
+                    text = "Create Account",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
-            }
-
-            Spacer(modifier = Modifier.height(0.dp))
-
-            // Name TextField
-            Text("Name", color = Color.White, fontSize = 16.sp)
-            StandardTextField(
-                value = viewModel.name,
-                onValueChange = { viewModel.name = it },
-                hint = "Name",
-                leadingIcon = {
-                    Icon(Icons.Default.AccountCircle, contentDescription = null, tint = Color.White)
-                },
-                keyboardType = KeyboardType.Text
-            )
-
-            // Email TextField
-            Spacer(modifier = Modifier.height(15.dp))
-            Text("Email", color = Color.White, fontSize = 16.sp)
-            StandardTextField(
-                value = viewModel.email,
-                onValueChange = { viewModel.email = it },
-                hint = "Email",
-                leadingIcon = {
-                    Icon(Icons.Default.Email, contentDescription = null, tint = Color.White)
-                },
-                keyboardType = KeyboardType.Email
-            )
-
-            // Password TextField
-            Spacer(modifier = Modifier.height(15.dp))
-            Text("Password", color = Color.White, fontSize = 16.sp)
-            StandardTextField(
-                value = viewModel.password,
-                onValueChange = { viewModel.password = it },
-                hint = "Password",
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = null, tint = Color.White)
-                },
-                trailingIcon = {
-                    IconButton(onClick = { viewModel.passwordVisible = !viewModel.passwordVisible }) {
-                        Icon(
-                            painterResource(id = if (viewModel.passwordVisible) R.drawable.eyeslash else R.drawable.eyenorm),
-                            contentDescription = if (viewModel.passwordVisible) "Hide password" else "Show password",
-                            tint = Color.White
-                        )
-                    }
-                },
-                isPassword = !viewModel.passwordVisible,
-                keyboardType = KeyboardType.Password
-            )
-
-            // Password validation hints
-            val passwordHints = viewModel.getPasswordValidationHints()
-            if (passwordHints.isNotEmpty() && viewModel.password.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF334155))
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(
-                            text = "Password requirements:",
-                            color = Color.White,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        passwordHints.forEach { hint ->
-                            Text(text = hint, color = Color(0xFFEF4444), fontSize = 11.sp)
-                        }
-                    }
-                }
-            }
-
-            // Confirm Password TextField
-            Spacer(modifier = Modifier.height(15.dp))
-            Text("Confirm Password", color = Color.White, fontSize = 16.sp)
-            StandardTextField(
-                value = viewModel.confirmPassword,
-                onValueChange = { viewModel.confirmPassword = it },
-                hint = "Confirm Password",
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = null, tint = Color.White)
-                },
-                trailingIcon = {
-                    IconButton(onClick = { viewModel.confirmPasswordVisible = !viewModel.confirmPasswordVisible }) {
-                        Icon(
-                            painterResource(id = if (viewModel.confirmPasswordVisible) R.drawable.eyeslash else R.drawable.eyenorm),
-                            contentDescription = if (viewModel.confirmPasswordVisible) "Hide password" else "Show password",
-                            tint = Color.White
-                        )
-                    }
-                },
-                isPassword = !viewModel.confirmPasswordVisible,
-                keyboardType = KeyboardType.Password
-            )
-
-            // Password mismatch warning
-            if (viewModel.confirmPassword.isNotEmpty() &&
-                viewModel.password.isNotEmpty() &&
-                viewModel.password != viewModel.confirmPassword
-            ) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Passwords do not match",
-                    color = Color(0xFFEF4444),
-                    fontSize = 12.sp
+                    text = "Join us and stay protected",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+            // --- END REPLACEMENT ---
 
-            // Error message display
-            if (viewModel.errorMessage.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(15.dp))
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFDC2626).copy(alpha = 0.1f))
-                ) {
+            Spacer(modifier = Modifier.height(48.dp))
+
+            // Form Fields
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                StandardTextField(
+                    value = viewModel.name,
+                    onValueChange = { viewModel.name = it },
+                    hint = "Name",
+                    leadingIcon = { Icon(Icons.Default.AccountCircle, contentDescription = "Name") },
+                    keyboardType = KeyboardType.Text
+                )
+                StandardTextField(
+                    value = viewModel.email,
+                    onValueChange = { viewModel.email = it },
+                    hint = "Email",
+                    leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Email") },
+                    keyboardType = KeyboardType.Email
+                )
+                StandardTextField(
+                    value = viewModel.password,
+                    onValueChange = { viewModel.password = it },
+                    hint = "Password",
+                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Password") },
+                    trailingIcon = {
+                        IconButton(onClick = { viewModel.passwordVisible = !viewModel.passwordVisible }) {
+                            Icon(
+                                imageVector = if (viewModel.passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                contentDescription = if (viewModel.passwordVisible) "Hide password" else "Show password"
+                            )
+                        }
+                    },
+                    isPassword = !viewModel.passwordVisible,
+                    keyboardType = KeyboardType.Password
+                )
+
+                PasswordValidationHints(viewModel)
+
+                StandardTextField(
+                    value = viewModel.confirmPassword,
+                    onValueChange = { viewModel.confirmPassword = it },
+                    hint = "Confirm Password",
+                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Confirm Password") },
+                    isPassword = !viewModel.confirmPasswordVisible,
+                    keyboardType = KeyboardType.Password
+                )
+
+                if (viewModel.confirmPassword.isNotEmpty() && viewModel.password != viewModel.confirmPassword) {
                     Text(
-                        text = viewModel.errorMessage,
-                        color = Color(0xFFAB3333),
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(12.dp)
+                        text = "Passwords do not match",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 16.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(30.dp))
+            // Error message display
+            if (viewModel.errorMessage.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                ) {
+                    Text(
+                        text = viewModel.errorMessage,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
 
-            // Register Button - Updated with enhanced functionality
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Register Button
             Button(
                 onClick = {
                     viewModel.register(
-                        context = context, // Pass context for SharedPreferences
-                        onSuccess = {
-                            // Navigate directly to OTP verification screen
-                            // Email and token are already stored in SharedPreferences by ViewModel
-                            onNavigateToVerifyOTP()
-                        },
+                        context = context,
+                        onSuccess = { onNavigateToVerifyOTP() },
                         saveUserData = { username ->
                             CoroutineScope(Dispatchers.IO).launch {
                                 DataStoreManager.saveUsername(context, username)
@@ -220,57 +165,82 @@ fun RegisterScreen(
                         }
                     )
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E3B4E)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                enabled = !viewModel.isLoading
+                enabled = !viewModel.isLoading,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 if (viewModel.isLoading) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        CircularProgressIndicator(
-                            color = Color.White,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Creating account...",
-                            fontSize = 14.sp,
-                            color = Color.White
-                        )
-                    }
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
                 } else {
-                    Text(text = "Register", fontSize = 16.sp, color = Color.White)
+                    Text("Register", style = MaterialTheme.typography.titleSmall)
                 }
             }
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Login link
-            Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                Text(text = "Have an account? ", fontSize = 14.sp, color = Color.White)
+            Row {
+                Text(
+                    text = "Have an account? ",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
                 Text(
                     text = "Login",
-                    fontSize = 14.sp,
-                    color = Color(0xFF4FC3F7),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.clickable { onNavigateToLogin() }
                 )
             }
-
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
 
-@Preview
+@Composable
+private fun PasswordValidationHints(viewModel: RegisterViewModel) {
+    val passwordHints = viewModel.getPasswordValidationHints()
+    if (passwordHints.isNotEmpty() && viewModel.password.isNotEmpty()) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        ) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                Text(
+                    text = "Password requirements:",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                passwordHints.forEach { hint ->
+                    Text(
+                        // Using a simple bullet point for clarity
+                        text = "• $hint",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
 @Composable
 fun RegisterScreenPreview() {
-    RegisterScreen(
-        onNavigateToLogin = {},
-        onNavigateToVerifyOTP = {}
-    )
+    Project1Theme {
+        RegisterScreen(
+            onNavigateToLogin = {},
+            onNavigateToVerifyOTP = {}
+        )
+    }
 }

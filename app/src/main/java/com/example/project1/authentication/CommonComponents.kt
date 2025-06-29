@@ -1,77 +1,114 @@
 package com.example.project1.authentication.CommonComponents
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.project1.R
-
-val DarkNavyBlue = Color(0xFF1A2235)
-val LightGray = Color(0xFFABB3BF)
-val MediumGray = Color(0xFF6B7280)
+import com.example.project1.ui.theme.Project1Theme
 
 @Composable
-fun AppHeader(title: String, onBackClick: () -> Unit) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Row(
+fun GeneralHeader(
+    modifier: Modifier = Modifier,
+    title: String,
+    showBackButton: Boolean,
+    onBackClick: () -> Unit = {}
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface) // Use theme background
+    ) {
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .height(64.dp) // Standard height for a header
+                .padding(horizontal = 4.dp), // Minimal padding for the box
+            contentAlignment = if (showBackButton) Alignment.CenterStart else Alignment.Center
         ) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    modifier = Modifier.clickable(onClick = onBackClick),
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.White
+            // Conditionally choose the layout based on showBackButton
+            if (showBackButton) {
+                // Layout for: [<-] [Title]
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    // No spacer needed, the Row arranges them next to each other
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            } else {
+                // Layout for: [ Centered Title ]
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
-
-            Text(
-                text = title,
-                color = Color.White,
-                fontSize = 22.sp,
-                modifier = Modifier.padding(start = 8.dp)
-            )
         }
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+    }
+}
 
-        Divider(
-            color = Color.Gray.copy(alpha = 0.3f),
-            thickness = 1.dp,
-            modifier = Modifier.fillMaxWidth()
-        )
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppHeader(title: String, onBackClick: () -> Unit) {
+    Surface(shadowElevation = 4.dp) { // Add a subtle shadow for separation
+        Column {
+            TopAppBar(
+                title = { Text(text = title) },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                // Use theme colors for the TopAppBar
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
+            )
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+        }
     }
 }
 
@@ -81,22 +118,24 @@ fun PrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    color: Color = Color(0xFF2E3B4E)
+    color: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary
 ) {
     Button(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
             .height(56.dp),
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(12.dp),
+        // This button now correctly uses the theme's primary color
         colors = ButtonDefaults.buttonColors(
-            containerColor = color,
-            contentColor = Color.White,
-            disabledContainerColor = color.copy(alpha = 0.5f)
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+            disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
         ),
         enabled = enabled
     ) {
-        Text(text = text, fontSize = 16.sp, color = Color.White)
+        Text(text = text, style = MaterialTheme.typography.labelLarge)
     }
 }
 
@@ -109,19 +148,19 @@ fun EmailTextField(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text("Email", color = Color.White.copy(alpha = 0.7f)) },
+        label = { Text("Email") },
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
-        colors = TextFieldDefaults.colors(
-            unfocusedContainerColor = Color.Transparent,
-            focusedContainerColor = Color.Transparent,
-            unfocusedTextColor = Color.White,
-            focusedTextColor = Color.White,
-            unfocusedIndicatorColor = Color.White.copy(alpha = 0.5f),
-            focusedIndicatorColor = Color.White
+        shape = RoundedCornerShape(12.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            focusedLabelColor = MaterialTheme.colorScheme.primary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            cursorColor = MaterialTheme.colorScheme.primary
         ),
         singleLine = true,
-        enabled = isEnabled
+        enabled = isEnabled,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
     )
 }
 
@@ -138,20 +177,18 @@ fun PasswordTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier.fillMaxWidth(),
-        placeholder = { Text(placeholder, color = LightGray) },
+        label = { Text(placeholder) },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Lock,
-                contentDescription = "Password",
-                tint = LightGray
+                contentDescription = "Password"
             )
         },
         trailingIcon = {
             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                 Icon(
-                    painterResource(id = if (passwordVisible) R.drawable.eyeslash else R.drawable.eyenorm),
-                    contentDescription = if (passwordVisible) "Hide password" else "Show password",
-                    tint = LightGray
+                    imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                    contentDescription = if (passwordVisible) "Hide password" else "Show password"
                 )
             }
         },
@@ -161,14 +198,13 @@ fun PasswordTextField(
             imeAction = ImeAction.Done
         ),
         singleLine = true,
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            unfocusedBorderColor = LightGray,
-            focusedBorderColor = Color.White,
-            unfocusedContainerColor = Color.White,
-            focusedContainerColor = Color.White,
-            unfocusedTextColor = Color.DarkGray,
-            focusedTextColor = Color.DarkGray
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            focusedLabelColor = MaterialTheme.colorScheme.primary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            cursorColor = MaterialTheme.colorScheme.primary
         )
     )
 }
@@ -182,10 +218,12 @@ fun TextWithLink(
     isEnabled: Boolean = true
 ) {
     val annotatedString = buildAnnotatedString {
-        append(regularText)
-        append(" ")
+        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onSurface)) {
+            append(regularText)
+            append(" ")
+        }
 
-        val linkColor = if (isEnabled) Color(0xFF4CAF50) else Color.Gray
+        val linkColor = if (isEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
 
         pushStringAnnotation(tag = "link", annotation = "link")
         withStyle(
@@ -201,7 +239,7 @@ fun TextWithLink(
 
     ClickableText(
         text = annotatedString,
-        style = MaterialTheme.typography.bodyMedium.copy(color = Color.White),
+        style = MaterialTheme.typography.bodyMedium,
         modifier = modifier,
         onClick = { offset ->
             annotatedString.getStringAnnotations(tag = "link", start = offset, end = offset)
@@ -223,8 +261,7 @@ fun SimpleOtpInputField(
     OutlinedTextField(
         value = otpValue,
         onValueChange = { newValue ->
-            // Only allow up to 6 digits
-            if (newValue.length <= 6 && (newValue.isEmpty() || newValue.all { it.isDigit() })) {
+            if (newValue.length <= 6 && newValue.all { it.isDigit() }) {
                 onOtpValueChange(newValue)
             }
         },
@@ -235,13 +272,11 @@ fun SimpleOtpInputField(
         singleLine = true,
         enabled = isEnabled,
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color.White,
-            unfocusedBorderColor = Color.Gray,
-            focusedLabelColor = Color.White,
-            unfocusedLabelColor = Color.Gray,
-            cursorColor = Color.White,
-            focusedTextColor = Color.White,
-            unfocusedTextColor = Color.White
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            focusedLabelColor = MaterialTheme.colorScheme.primary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            cursorColor = MaterialTheme.colorScheme.primary
         ),
         modifier = modifier
             .fillMaxWidth()
@@ -265,22 +300,25 @@ fun StandardTextField(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(text = hint, color = Color.White.copy(alpha = 0.7f)) },
+        label = { Text(text = hint) },
         leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
         visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = ImeAction.Done),
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 56.dp, max = 64.dp),
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-            disabledContainerColor = Color.Transparent,
-            focusedTextColor = Color.White,
-            unfocusedTextColor = Color.White,
-            focusedIndicatorColor = Color.White,
-            unfocusedIndicatorColor = Color.White.copy(alpha = 0.5f)
+            .heightIn(min = 56.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            focusedLabelColor = MaterialTheme.colorScheme.primary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            cursorColor = MaterialTheme.colorScheme.primary,
+            // Provide tint for icons passed into this component
+            focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
+            unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            focusedTrailingIconColor = MaterialTheme.colorScheme.primary,
+            unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         singleLine = true,
         keyboardActions = KeyboardActions(
@@ -288,6 +326,30 @@ fun StandardTextField(
                 focusManager.clearFocus()
             }
         ),
-        enabled = enabled
+        enabled = enabled,
+        shape = RoundedCornerShape(12.dp)
     )
+}
+
+
+@Preview(showBackground = true, widthDp = 360)
+@Composable
+private fun CommonComponentsPreview() {
+    Project1Theme {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            AppHeader(title = "Preview", onBackClick = {})
+            PrimaryButton(text = "Primary Button", onClick = {})
+            EmailTextField(value = "test@example.com", onValueChange = {})
+            PasswordTextField(value = "password", onValueChange = {}, placeholder = "Password")
+            TextWithLink(regularText = "Don't have an account?", linkText = "Sign Up", onLinkClick = {})
+            SimpleOtpInputField(otpValue = "123", onOtpValueChange = {})
+            StandardTextField(value = "Standard Text", onValueChange = {}, hint = "Hint")
+            GeneralHeader(title = "Preview", showBackButton = true, onBackClick = {}) // Add this line()
+        }
+    }
 }

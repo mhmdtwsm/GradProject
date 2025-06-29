@@ -41,7 +41,9 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.project1.R
 import Screen
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.project1.home.BottomNavigationBar
+import com.example.project1.home.network.PostDto
 import com.example.project1.viewmodel.CommunityViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -447,7 +449,7 @@ fun Community(
 
 @Composable
 private fun PostItem(
-    post: com.example.project1.home.network.PostDto,
+    post: PostDto,
     currentUsername: String,
     onLikeClick: () -> Unit,
     onCommentClick: () -> Unit
@@ -572,4 +574,14 @@ private fun formatDate(dateString: String): String {
     } catch (e: Exception) {
         "Recently"
     }
+}
+
+
+@Preview
+@Composable
+fun PreviewCommunity() {
+    Community(
+        navController = NavController(LocalContext.current),
+        viewModel = viewModel(),
+    )
 }

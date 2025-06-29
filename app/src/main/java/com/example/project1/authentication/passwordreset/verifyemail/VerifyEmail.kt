@@ -1,126 +1,115 @@
-package com.example.project1.authentication.passwordreset
+package com.example.project1.authentication.passwordreset.verifyemail
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.project1.authentication.CommonComponents.*
+import com.example.project1.authentication.CommonComponents.StandardTextField
+import com.example.project1.ui.theme.Project1Theme
 import com.example.project1.viewmodel.VerifyEmailUiState
 import com.example.project1.viewmodel.VerifyEmailViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VerifyEmailScreen(
     navController: NavController,
-    viewModel: VerifyEmailViewModel = viewModel(),
     fromLogin: Boolean? = false,
 ) {
+    val viewModel: VerifyEmailViewModel = viewModel()
     var email by remember { mutableStateOf("") }
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    val onBackClick: () -> Unit = { navController.popBackStack() }
 
     // Handle navigation after successful OTP sent
     LaunchedEffect(uiState) {
-        when (uiState) {
-            is VerifyEmailUiState.Success -> {
-                val successState = uiState as VerifyEmailUiState.Success
-
-                // Log the values for debugging
-                android.util.Log.d(
-                    "VerifyEmailScreen ${fromLogin}",
-                    "Success! Email: ${successState.email}, Token: ${successState.token}"
-                )
-
-                // Store email and token in shared preferences for persistence
-                val sharedPrefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(
-                    context
-                )
-                sharedPrefs.edit()
-                    .putString("VERIFY_EMAIL", successState.email)
-                    .putString("VERIFY_TOKEN", successState.token)
-                    .apply()
-
-                // Navigate to OTP verification screen
-                navController.navigate("verify_code/${fromLogin?:false}")
-            }
-
-            else -> {}
+        if (uiState is VerifyEmailUiState.Success) {
+            val successState = uiState as VerifyEmailUiState.Success
+            val sharedPrefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+            sharedPrefs.edit()
+                .putString("VERIFY_EMAIL", successState.email)
+                .putString("VERIFY_TOKEN", successState.token)
+                .apply()
+            navController.navigate("verify_code/${fromLogin ?: false}")
         }
     }
 
-    Scaffold { innerPadding ->
-        Box(
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(if (fromLogin == true) "Reset Password" else "Verify Email") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
+            )
+        }
+    ) { innerPadding ->
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(android.graphics.Color.parseColor("#101F31")))
                 .padding(innerPadding)
-                .padding(16.dp)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize()
+            Spacer(modifier = Modifier.height(40.dp))
+
+            Text(
+                text = "Please enter your email ${if (fromLogin == true) "to reset the password" else "to verify your account"}",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+
+            StandardTextField(
+                value = email,
+                onValueChange = { email = it },
+                hint = "Enter your email",
+                leadingIcon = { Icon(imageVector = Icons.Default.Email, contentDescription = "Email") },
+                keyboardType = KeyboardType.Email,
+                enabled = uiState !is VerifyEmailUiState.Loading
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = { viewModel.sendOtp(email, fromLogin, navController) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                enabled = uiState !is VerifyEmailUiState.Loading
             ) {
-                AppHeader(
-                    title = if (fromLogin == true) "Reset Password" else "Verify Email",
-                    onBackClick = onBackClick
-                )
-
-                Spacer(modifier = Modifier.height(40.dp))
-
-                Text(
-                    text = "Please enter your email ${if (fromLogin == true) "to reset the password" else "to verify your account"}",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(bottom = 24.dp)
-                )
-
-                EmailTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    isEnabled = uiState !is VerifyEmailUiState.Loading
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                PrimaryButton(
-                    text = "Send OTP",
-                    onClick = {
-                        viewModel.sendOtp(email, fromLogin, navController)
-                    },
-                    enabled = uiState !is VerifyEmailUiState.Loading,
-                    color = Color(0xFF2E3B4E)
-                )
-
-                // Error message
-                if (uiState is VerifyEmailUiState.Error) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = (uiState as VerifyEmailUiState.Error).message,
-                        color = Color.Red,
-                        fontSize = 14.sp
-                    )
+                if (uiState is VerifyEmailUiState.Loading) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                } else {
+                    Text("Send OTP")
                 }
             }
 
-            // Loading indicator
-            if (uiState is VerifyEmailUiState.Loading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = Color.White
-                    )
-                }
+            // Error message
+            if (uiState is VerifyEmailUiState.Error) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = (uiState as VerifyEmailUiState.Error).message,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
         }
     }
@@ -129,8 +118,10 @@ fun VerifyEmailScreen(
 @Preview(showBackground = true)
 @Composable
 fun VerifyEmailScreenPreview() {
-    VerifyEmailScreen(
-        navController = rememberNavController(),
-        fromLogin = true
-    )
+    Project1Theme {
+        VerifyEmailScreen(
+            navController = rememberNavController(),
+            fromLogin = true
+        )
+    }
 }

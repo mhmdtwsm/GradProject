@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
@@ -21,25 +20,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.example.project1.R
+import com.example.project1.ui.theme.customColors
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.Executors
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,25 +43,18 @@ fun QRCodeScannerScreen(
     onClose: () -> Unit
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
-
     var hasCameraPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.CAMERA
+                context, Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED
         )
     }
-
     var flashEnabled by remember { mutableStateOf(false) }
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
-        onResult = { isGranted ->
-            hasCameraPermission = isGranted
-        }
+        onResult = { isGranted -> hasCameraPermission = isGranted }
     )
 
     LaunchedEffect(key1 = true) {
@@ -77,34 +65,29 @@ fun QRCodeScannerScreen(
 
     Scaffold(
         topBar = {
-            SmallTopAppBar(
-                title = {
-                    Text(
-                        "Scan QR Code",
-                        color = Color.White
-                    )
-                },
+            TopAppBar(
+                title = { Text("Scan QR Code") },
                 navigationIcon = {
                     IconButton(onClick = onClose) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
+                            contentDescription = "Back"
                         )
                     }
                 },
                 actions = {
-                    // Toggle flash button
                     IconButton(onClick = { flashEnabled = !flashEnabled }) {
                         Icon(
                             painter = painterResource(if (flashEnabled) R.drawable.flashon else R.drawable.flashoff),
                             contentDescription = if (flashEnabled) "Disable Flash" else "Enable Flash",
-                            tint = Color.White
                         )
                     }
                 },
-                colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = Color(0xFF1C2431)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -113,12 +96,11 @@ fun QRCodeScannerScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(Color(0xFF1C2431))
+                .background(MaterialTheme.colorScheme.background)
         ) {
             if (hasCameraPermission) {
                 CameraPreview(
                     onQrCodeScanned = { qrContent ->
-                        // Check if the scanned content is a URL
                         if (qrContent.startsWith("http://") || qrContent.startsWith("https://")) {
                             onUrlDetected(qrContent)
                         }
@@ -134,11 +116,10 @@ fun QRCodeScannerScreen(
                         .padding(16.dp)
                 ) {
                     Card(
-                        modifier = Modifier
-                            .fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = Color.Black.copy(alpha = 0.6f)
+                            containerColor = MaterialTheme.customColors.semiTransparent
                         )
                     ) {
                         Text(
@@ -146,7 +127,7 @@ fun QRCodeScannerScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp),
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onSurface,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -162,25 +143,21 @@ fun QRCodeScannerScreen(
                 ) {
                     Text(
                         text = "Camera Permission Required",
-                        color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.titleLarge
                     )
-
                     Spacer(modifier = Modifier.height(16.dp))
-
                     Text(
                         text = "This feature requires camera permission to scan QR codes.",
-                        color = Color.LightGray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
-
                     Spacer(modifier = Modifier.height(24.dp))
-
                     Button(
                         onClick = { requestPermissionLauncher.launch(Manifest.permission.CAMERA) },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Gray
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
                         )
                     ) {
                         Text("Grant Permission")
@@ -208,12 +185,9 @@ fun CameraPreview(
         BarcodeScanning.getClient(options)
     }
 
-    var qrCodeDetected by remember { mutableStateOf(false) }
-
-    // Use to prevent multiple detections of the same code in rapid succession
-    val lastDetectedCode = remember { mutableStateOf("") }
+    val lastDetectedCode = remember { mutableStateOf<String?>(null) }
     val lastDetectionTime = remember { mutableStateOf(0L) }
-    val DETECTION_COOLDOWN = 2000L // 2 seconds cooldown
+    val detectionCooldown = 2000L // 2 seconds
 
     AndroidView(
         factory = { previewView },
@@ -222,60 +196,39 @@ fun CameraPreview(
         cameraProviderFuture.addListener({
             try {
                 val cameraProvider = cameraProviderFuture.get()
-
-                // Unbind all use cases before rebinding
                 cameraProvider.unbindAll()
 
-                // Preview use case
                 val preview = Preview.Builder().build().also {
                     it.setSurfaceProvider(previewView.surfaceProvider)
                 }
 
-                // Image analysis use case
                 val imageAnalysis = ImageAnalysis.Builder()
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
                     .also {
-                        it.setAnalyzer(executor, { imageProxy ->
+                        it.setAnalyzer(executor) { imageProxy ->
                             processImageProxy(
                                 barcodeScanner,
-                                imageProxy,
-                                onQrCodeDetected = { qrContent ->
-                                    val currentTime = System.currentTimeMillis()
-
-                                    // Check if this is a new code or if enough time has passed
-                                    if (qrContent != lastDetectedCode.value ||
-                                        (currentTime - lastDetectionTime.value > DETECTION_COOLDOWN)
-                                    ) {
-
-                                        lastDetectedCode.value = qrContent
-                                        lastDetectionTime.value = currentTime
-                                        qrCodeDetected = true
-                                        onQrCodeScanned(qrContent)
-                                    }
+                                imageProxy
+                            ) { qrContent ->
+                                val currentTime = System.currentTimeMillis()
+                                if (qrContent != lastDetectedCode.value || (currentTime - lastDetectionTime.value > detectionCooldown)) {
+                                    lastDetectedCode.value = qrContent
+                                    lastDetectionTime.value = currentTime
+                                    onQrCodeScanned(qrContent)
                                 }
-                            )
-                        })
+                            }
+                        }
                     }
 
-                // Camera selector
                 val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-                // Build camera
                 val camera = cameraProvider.bindToLifecycle(
-                    lifecycleOwner,
-                    cameraSelector,
-                    preview,
-                    imageAnalysis
+                    lifecycleOwner, cameraSelector, preview, imageAnalysis
                 )
 
-                // Control flash if needed
                 if (camera.cameraInfo.hasFlashUnit()) {
                     camera.cameraControl.enableTorch(flashEnabled)
-                } else {
-                    camera.cameraControl.enableTorch(false)
                 }
-
             } catch (e: Exception) {
                 Log.e("CameraPreview", "Camera initialization failed", e)
             }
@@ -283,7 +236,7 @@ fun CameraPreview(
     }
 }
 
-@androidx.annotation.OptIn(ExperimentalGetImage::class)
+@androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
 private fun processImageProxy(
     barcodeScanner: BarcodeScanner,
     imageProxy: ImageProxy,
@@ -294,24 +247,12 @@ private fun processImageProxy(
         return
     }
 
-    val image = InputImage.fromMediaImage(
-        mediaImage,
-        imageProxy.imageInfo.rotationDegrees
-    )
+    val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
 
     barcodeScanner.process(image)
         .addOnSuccessListener { barcodes ->
-            if (barcodes.isNotEmpty()) {
-                // Get the first detected QR code value
-                val qrCode = barcodes.firstOrNull { it.valueType == Barcode.TYPE_URL }
-                qrCode?.url?.url?.let { url ->
-                    onQrCodeDetected(url)
-                } ?: run {
-                    // If it's not a URL type, check for raw value
-                    barcodes.firstOrNull()?.rawValue?.let { content ->
-                        onQrCodeDetected(content)
-                    }
-                }
+            barcodes.firstOrNull()?.rawValue?.let { content ->
+                onQrCodeDetected(content)
             }
         }
         .addOnFailureListener {

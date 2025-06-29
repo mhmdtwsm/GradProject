@@ -12,7 +12,7 @@ import com.example.project1.authentication.login.LoginScreen
 import com.example.project1.authentication.passwordreset.ForgotPasswordScreen
 import com.example.project1.authentication.passwordreset.OTP.VerifyCodeScreen
 import com.example.project1.authentication.passwordreset.ResetPasswordScreen
-import com.example.project1.authentication.passwordreset.VerifyEmailScreen
+import com.example.project1.authentication.passwordreset.verifyemail.VerifyEmailScreen
 import com.example.project1.authentication.register.RegisterScreen
 import com.example.project1.authentication.resetpassword.ChangePasswordScreen
 import com.example.project1.chat.ChatScreen
@@ -21,8 +21,8 @@ import com.example.project1.home.HomeScreen
 import com.example.project1.onboard.OnboardingScreen
 import com.example.project1.settings.*
 import com.example.project1.tools.*
-import com.example.project1.tools.passwordgenerate.PasswordGenerate
-import com.example.project1.tools.passwordtest.PasswordTest
+import com.example.project1.tools.passwordgenerate.PasswordGenerateScreen
+import com.example.project1.tools.passwordtest.PasswordTestScreen
 import com.example.project1.tools.tips.SecurityTipsScreen
 import com.example.project1.tools.urlanalyzer.UrlAnalyzerScreen
 import com.example.project1.settings.terms.TermsScreen
@@ -97,10 +97,6 @@ fun AppNavigation(
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
-                onNavigateToForgotPassword = {
-                    navController.navigate(Screen.ForgotPassword.route)
-                },
-                viewModel = viewModel(),
                 navController = navController
             )
         }
@@ -152,7 +148,7 @@ fun AppNavigation(
             arguments = listOf(navArgument("email") { type = NavType.StringType })
         ) {
             val email = it.arguments?.getString("email") ?: ""
-            ResetPasswordScreen(navController = navController, onBackClick = {}, email = email)
+            ResetPasswordScreen(navController = navController, email = email)
         }
 
         // Community
@@ -202,10 +198,10 @@ fun AppNavigation(
             ToolsMenu(navController = navController)
         }
         composable(Screen.PasswordTest.route) {
-            PasswordTest(navController = navController)
+            PasswordTestScreen(navController = navController)
         }
         composable(Screen.PasswordGenerate.route) {
-            PasswordGenerate(navController = navController)
+            PasswordGenerateScreen(navController = navController)
         }
         composable(Screen.SecurityTips.route) {
             SecurityTipsScreen(navController = navController)

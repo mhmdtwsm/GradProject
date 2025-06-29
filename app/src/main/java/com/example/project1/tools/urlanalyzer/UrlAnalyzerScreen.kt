@@ -28,6 +28,11 @@ import retrofit2.Response
 import androidx.compose.ui.platform.LocalContext
 import android.content.ClipboardManager
 import android.content.Context
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import com.example.project1.ui.theme.customColors
 import java.net.InetAddress
 import java.net.URL
 
@@ -172,6 +177,7 @@ class UrlAnalyzerViewModel : ViewModel() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UrlAnalyzerScreen(navController: NavController, viewModel: UrlAnalyzerViewModel = viewModel()) {
     var url by remember { mutableStateOf("") }
@@ -179,175 +185,170 @@ fun UrlAnalyzerScreen(navController: NavController, viewModel: UrlAnalyzerViewMo
     val extraInfo by viewModel.extraInfo
 
     Scaffold(
-        bottomBar = {
-            BottomNavigationBar(
-                navController = navController,
-                selectedScreen = "UrlAnalyzer"
+        topBar = {
+            TopAppBar(
+                title = { Text("URL Analyzer") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
-        }
-    ) { innerPadding ->
+        },
+        ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF101F31))
                 .padding(innerPadding)
-                .padding(16.dp),
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                androidx.compose.foundation.Image(
-                    painter = painterResource(id = R.drawable.arrow),
-                    contentDescription = "Back",
-                    modifier = Modifier
-                        .size(30.dp)
-                        .clickable { navController.popBackStack() }
-                )
-                Spacer(modifier = Modifier.weight(0.69f))
-                Text("URL Analyzer", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                Spacer(modifier = Modifier.weight(1f))
-            }
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(24.dp))
-            Divider(color = Color.Gray.copy(alpha = 0.5f))
-            Spacer(modifier = Modifier.height(60.dp))
-
-            val context = LocalContext.current
-
-            OutlinedTextField(
-                value = url,
-                onValueChange = { url = it },
-                label = { Text("Enter URL") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    cursorColor = Color.White,
-                    focusedLabelColor = Color.White,
-                    unfocusedLabelColor = Color.Gray
-                ),
-                trailingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.clipboard),
-                        contentDescription = "Paste URL",
-                        tint = Color.White,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clickable {
-                                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                val text = clipboard.primaryClip?.getItemAt(0)?.text?.toString() ?: ""
-                                if (text.isNotBlank()) {
-                                    url = text
-                                }
-                            }
-                    )
-                }
+            UrlInputField(
+                url = url,
+                onUrlChange = { url = it }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = { viewModel.analyzeUrl(url) }) {
-                Text("Scan")
+            Button(
+                onClick = { if (url.isNotBlank()) viewModel.analyzeUrl(url) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = url.isNotBlank()
+            ) {
+                Text("Analyze URL")
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             if (result.isNotEmpty() || extraInfo != null) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFF1E2A3A),
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(result, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-
-                        extraInfo?.let { info ->
-
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Divider(color = Color.Gray)
-
-                            info.ip_address?.let {
-                                Text("\uD83D\uDCE1 IP Address: $it", color = Color.White)
-                                Divider(color = Color.DarkGray, modifier = Modifier.padding(vertical = 8.dp))
-                            }
-
-                            info.categories?.let { cats ->
-                                Text("\uD83D\uDCC1 Categories:", fontWeight = FontWeight.SemiBold, color = Color.Cyan)
-                                cats.forEach { (k, v) -> Text("$k: $v", color = Color.White) }
-                                Divider(color = Color.DarkGray, modifier = Modifier.padding(vertical = 8.dp))
-                            }
-
-                            info.last_http_response?.let { resp ->
-                                Text("\uD83C\uDF10 HTTP Response:", fontWeight = FontWeight.SemiBold, color = Color.Cyan)
-                                Text("Final URL: ${resp.final_url ?: "N/A"}", color = Color.White)
-                                Text("Status Code: ${resp.status_code ?: "N/A"}", color = Color.White)
-                                resp.headers?.forEach { (k, v) -> Text("$k: $v", color = Color.White, fontSize = 12.sp) }
-                                Text("Body Length: ${resp.body_length ?: "N/A"}", color = Color.White)
-                                Text("Body SHA-256: ${resp.body_sha256 ?: "N/A"}", color = Color.White)
-                                Divider(color = Color.DarkGray, modifier = Modifier.padding(vertical = 8.dp))
-                            }
-
-                            info.url_info?.let { urlInfo ->
-                                Text("\uD83D\uDCC4 URL Info:", fontWeight = FontWeight.SemiBold, color = Color.Cyan)
-                                Text("Title: ${urlInfo.title ?: "N/A"}", color = Color.White)
-                                Text("Description: ${urlInfo.description ?: "N/A"}", color = Color.White)
-                                Text("Keywords: ${urlInfo.keywords?.joinToString() ?: "N/A"}", color = Color.White)
-                                Divider(color = Color.DarkGray, modifier = Modifier.padding(vertical = 8.dp))
-                            }
-
-                            info.last_analysis_stats?.let { stats ->
-                                Text("\uD83D\uDCCA Analysis Stats:", fontWeight = FontWeight.SemiBold, color = Color.Cyan)
-                                Text("Harmless: ${stats.harmless ?: 0}", color = Color.White)
-                                Text("Malicious: ${stats.malicious ?: 0}", color = Color.White)
-                                Text("Suspicious: ${stats.suspicious ?: 0}", color = Color.White)
-                                Text("Undetected: ${stats.undetected ?: 0}", color = Color.White)
-                                Text("Timeout: ${stats.timeout ?: 0}", color = Color.White)
-                                Divider(color = Color.DarkGray, modifier = Modifier.padding(vertical = 8.dp))
-                            }
-
-                            info.reputation?.let {
-                                Text("\u2B50 Reputation: $it", color = Color.White)
-                            }
-
-                            info.total_votes?.let { votes ->
-                                Text("\uD83D\uDC4D Harmless Votes = ${votes.harmless ?: 0}", color = Color.White)
-                                Text("\uD83D\uDC4E Malicious Votes = ${votes.malicious ?: 0}", color = Color.White)
-                                Divider(color = Color.DarkGray, modifier = Modifier.padding(vertical = 8.dp))
-                            }
-
-                            info.popular_threat_classification?.let { ptc ->
-                                Text("\uD83D\uDD25 Threat Classification:", fontWeight = FontWeight.SemiBold, color = Color.Cyan)
-                                Text("Threat Name: ${ptc.threat_name ?: "N/A"}", color = Color.White)
-                                Text("Category: ${ptc.category ?: "N/A"}", color = Color.White)
-                                Text("Ranking: ${ptc.popularity_ranking ?: "N/A"}", color = Color.White)
-                                Divider(color = Color.DarkGray, modifier = Modifier.padding(vertical = 8.dp))
-                            }
-
-                            info.whois?.let {
-                                Text("\uD83D\uDCC7 Whois Info:", fontWeight = FontWeight.SemiBold, color = Color.Cyan)
-                                Text(it, color = Color.White, fontSize = 12.sp)
-                                Divider(color = Color.DarkGray, modifier = Modifier.padding(vertical = 8.dp))
-                            }
-
-                            info.content_categories?.let { cc ->
-                                Text("\uD83D\uDDC2 Content Categories:", fontWeight = FontWeight.SemiBold, color = Color.Cyan)
-                                cc.forEach { (k, v) -> Text("$k: $v", color = Color.White) }
-                            }
-                        }
-                    }
-                }
+                AnalysisResultCard(result = result, extraInfo = extraInfo)
             }
         }
     }
+}
+
+@Composable
+private fun UrlInputField(url: String, onUrlChange: (String) -> Unit) {
+    val context = LocalContext.current
+    OutlinedTextField(
+        value = url,
+        onValueChange = onUrlChange,
+        label = { Text("Enter or paste a URL") },
+        placeholder = { Text("https://example.com") },
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth(),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = MaterialTheme.customColors.inputBackground,
+            unfocusedContainerColor = MaterialTheme.customColors.inputBackground,
+            focusedTextColor = MaterialTheme.customColors.onInputBackground,
+            unfocusedTextColor = MaterialTheme.customColors.onInputBackground,
+            cursorColor = MaterialTheme.colorScheme.primary,
+            focusedLabelColor = MaterialTheme.colorScheme.primary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
+            unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+        ),
+        trailingIcon = {
+            IconButton(onClick = {
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clipboard.primaryClip?.getItemAt(0)?.text?.toString()?.let {
+                    onUrlChange(it)
+                }
+            }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.clipboard),
+                    contentDescription = "Paste URL",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    )
+}
+
+@Composable
+private fun AnalysisResultCard(result: String, extraInfo: UrlAttributes?) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.customColors.cardBackground,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(result, style = MaterialTheme.typography.titleMedium)
+
+            extraInfo?.let { info ->
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+                ResultSection(title = "IP Address", value = info.ip_address)
+                ResultSection(title = "Reputation", value = info.reputation?.toString())
+                ResultSection(
+                    title = "Analysis Stats",
+                    content = {
+                        Column {
+                            Text("Harmless: ${info.last_analysis_stats?.harmless ?: 0}")
+                            Text("Malicious: ${info.last_analysis_stats?.malicious ?: 0}")
+                            Text("Suspicious: ${info.last_analysis_stats?.suspicious ?: 0}")
+                        }
+                    }
+                )
+                ResultSection(
+                    title = "Community Votes",
+                    content = {
+                        Column {
+                            Text("Harmless: ${info.total_votes?.harmless ?: 0}")
+                            Text("Malicious: ${info.total_votes?.malicious ?: 0}")
+                        }
+                    }
+                )
+                ResultSection(title = "Final URL", value = info.last_http_response?.final_url)
+                ResultSection(title = "Status Code", value = info.last_http_response?.status_code?.toString())
+            }
+        }
+    }
+}
+
+@Composable
+private fun ResultSection(title: String, value: String?) {
+    if (!value.isNullOrBlank()) {
+        Column {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+    }
+}
+
+@Composable
+private fun ResultSection(title: String, content: @Composable () -> Unit) {
+    Column {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary
+        )
+        ProvideTextStyle(value = MaterialTheme.typography.bodyMedium) {
+            content()
+        }
+    }
+    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 }
