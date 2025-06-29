@@ -21,6 +21,7 @@ class CommunityViewModel(application: Application) : AndroidViewModel(applicatio
         private const val TAG = "CommunityViewModel"
     }
 
+
     private val networkService = CommunityNetworkService()
     private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
 
@@ -40,6 +41,8 @@ class CommunityViewModel(application: Application) : AndroidViewModel(applicatio
     private val _selectedTab = MutableStateFlow(0)
     val selectedTab: StateFlow<Int> = _selectedTab
 
+
+
     // User info
     private val _currentUserId = MutableStateFlow("")
     val currentUserId: StateFlow<String> = _currentUserId
@@ -58,6 +61,56 @@ class CommunityViewModel(application: Application) : AndroidViewModel(applicatio
         Log.d(TAG, "CommunityViewModel initialized")
         loadUserInfo()
     }
+
+
+    fun deletePost(postId: Int) {
+        viewModelScope.launch {
+            try {
+                val authToken = getAuthToken()
+                val success = networkService.deletePost(authToken, postId)
+
+                if (success) {
+                    Log.d(TAG, "Post deleted successfully")
+                    refreshPosts()
+                } else {
+                    Log.e(TAG, "Failed to delete post")
+                    _error.value = "Failed to delete post"
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error deleting post: ${e.message}", e)
+                _error.value = "Error deleting post: ${e.message}"
+            }
+        }
+    }
+    private val service = CommunityNetworkService()
+
+    fun editPost(postId: Int, newContent: String, newImageBitmap: Bitmap? = null) {
+        viewModelScope.launch {
+            try {
+                val authToken = getAuthToken()
+
+                val newImageBase64 = newImageBitmap?.let {
+                    convertBitmapToBase64(it)
+                } ?: ""
+
+                val success = networkService.editPost(authToken, postId, newContent, newImageBase64)
+
+                if (success) {
+                    Log.d(TAG, "Post updated successfully")
+                    refreshPosts()
+                } else {
+                    Log.e(TAG, "Failed to update post")
+                    _error.value = "Failed to update post"
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error updating post: ${e.message}", e)
+                _error.value = "Error updating post: ${e.message}"
+            }
+        }
+    }
+
+
+
 
     /**
      * Load user information from the server
@@ -364,8 +417,13 @@ class CommunityViewModel(application: Application) : AndroidViewModel(applicatio
         return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
     }
 
+    fun convertBitmapToBase64(bitmap: Bitmap): String {
+        return networkService.bitmapToBase64(bitmap)
+    }
+
     override fun onCleared() {
         super.onCleared()
         Log.d(TAG, "CommunityViewModel cleared")
     }
+
 }

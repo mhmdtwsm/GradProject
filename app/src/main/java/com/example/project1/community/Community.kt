@@ -41,9 +41,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.project1.R
 import Screen
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.project1.home.BottomNavigationBar
-import com.example.project1.home.network.PostDto
 import com.example.project1.viewmodel.CommunityViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -54,7 +52,22 @@ import java.util.*
 fun Community(
     navController: NavController,
     viewModel: CommunityViewModel = viewModel()
+
 ) {
+    val editImagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            viewModel.setSelectedImage(it)
+            Log.d("Community", "Selected image for editing: $uri")
+        }
+    }
+// Launcher لاختيار صورة جديدة أثناء تعديل بوست
+
+    val onPickEditImage: () -> Unit = {
+        editImagePickerLauncher.launch("image/*")
+    }
+
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -65,6 +78,8 @@ fun Community(
     val isCreatingPost by viewModel.isCreatingPost.collectAsState()
     val selectedTab by viewModel.selectedTab.collectAsState()
     val currentUsername by viewModel.currentUsername.collectAsState()
+    val currentUserId by viewModel.currentUserId.collectAsState()
+
     val selectedImageUri by viewModel.selectedImageUri.collectAsState()
     val selectedImageBitmap by viewModel.selectedImageBitmap.collectAsState()
 
@@ -332,21 +347,24 @@ fun Community(
 
                 // Posts List
                 val filteredPosts = viewModel.getFilteredPosts()
+
                 items(filteredPosts) { post ->
                     PostItem(
                         post = post,
                         currentUsername = currentUsername,
-                        onLikeClick = {
-                            Log.d("Community", "Like clicked for post: ${post.id}")
-                            viewModel.likePost(post.id)
-                        },
+                        currentUserId = currentUserId,
+                        onLikeClick = { viewModel.likePost(post.id) },
                         onCommentClick = {
-                            Log.d("Community", "Comment clicked for post: ${post.id}")
                             selectedPostId = post.id
                             showCommentDialog = true
+                        },
+                        onPickEditImage = {
+                            editImagePickerLauncher.launch("image/*") // ✅ دا اللي هيفتح الجاليري
                         }
                     )
+
                 }
+
 
                 // Empty state
                 if (!isLoading && filteredPosts.isEmpty()) {
@@ -447,12 +465,15 @@ fun Community(
     }
 }
 
+
 @Composable
 private fun PostItem(
-    post: PostDto,
+    post: com.example.project1.home.network.PostDto,
     currentUsername: String,
+    currentUserId: String,
     onLikeClick: () -> Unit,
-    onCommentClick: () -> Unit
+    onCommentClick: () -> Unit,
+    onPickEditImage: () -> Unit // ⬅️ أضف ده
 ) {
     var showComments by remember { mutableStateOf(false) }
 
@@ -465,23 +486,39 @@ private fun PostItem(
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+
             // Post Header
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFF37474F)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(Icons.Default.Person, contentDescription = null, tint = Color.White)
+                if (!post.profilePicture.isNullOrEmpty()) {
+                    val imageBytes = Base64.decode(post.profilePicture, Base64.DEFAULT)
+                    val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF37474F)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Person, contentDescription = null, tint = Color.White)
+                    }
                 }
+
                 Column {
                     Text(
-                        text = if (post.userId == currentUsername) "You" else "User ${post.userId.take(8)}",
+                        text = if (post.userId == currentUsername) "You" else post.userName,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF90CAF9)
                     )
@@ -507,7 +544,6 @@ private fun PostItem(
                         .height(200.dp),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    // Convert base64 to bitmap and display
                     val imageBytes = Base64.decode(post.image, Base64.DEFAULT)
                     val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
 
@@ -561,9 +597,106 @@ private fun PostItem(
                     }
                 }
             }
+
+
+            // 🔥 Delete button if current user is the owner
+            if (post.userId == currentUserId) {
+                val viewModel: CommunityViewModel = viewModel()
+                var showEditDialog by remember { mutableStateOf(false) }
+                var editedContent by remember { mutableStateOf(post.content) }
+                var editedImageBitmap by remember { mutableStateOf<Bitmap?>(null) }
+
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = {
+                        editedImageBitmap = null
+                        viewModel.clearSelectedImage() // نفضي الصورة الحالية عشان التعديل يبدأ fresh
+                        showEditDialog = true
+                    }) {
+                        Text("Edit", color = Color.Yellow)
+                    }
+
+                    TextButton(onClick = {
+                        viewModel.deletePost(post.id)
+                    }) {
+                        Text("Delete", color = Color.Red)
+                    }
+                }
+
+                if (showEditDialog) {
+                    AlertDialog(
+                        onDismissRequest = {
+                            showEditDialog = false
+                            editedContent = post.content
+                            editedImageBitmap = null
+                        },
+                        title = { Text("Edit Post") },
+                        text = {
+                            Column {
+                                OutlinedTextField(
+                                    value = editedContent,
+                                    onValueChange = { editedContent = it },
+                                    label = { Text("Post Content") },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                // زرار تغيير الصورة
+                                Button(onClick = {
+                                    onPickEditImage() // يفتح الجاليري
+                                }) {
+                                    Text("Change Image")
+                                }
+
+
+                                // Preview image if exists
+                                val selectedImageBitmap by viewModel.selectedImageBitmap.collectAsState()
+                                val bitmap = editedImageBitmap ?: selectedImageBitmap
+                                bitmap?.let {
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Image(
+                                        bitmap = it.asImageBitmap(),
+                                        contentDescription = "Edited Image",
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(150.dp)
+                                            .clip(RoundedCornerShape(8.dp)),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                val imageToSend = editedImageBitmap ?: viewModel.selectedImageBitmap.value
+                                viewModel.editPost(post.id, editedContent, imageToSend)
+                                showEditDialog = false
+                            }) {
+                                Text("Save")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = {
+                                showEditDialog = false
+                                editedContent = post.content
+                                editedImageBitmap = null
+                            }) {
+                                Text("Cancel")
+                            }
+                        }
+                    )
+                }
+            }
+
         }
+
     }
 }
+
 
 private fun formatDate(dateString: String): String {
     return try {
@@ -574,14 +707,4 @@ private fun formatDate(dateString: String): String {
     } catch (e: Exception) {
         "Recently"
     }
-}
-
-
-@Preview
-@Composable
-fun PreviewCommunity() {
-    Community(
-        navController = NavController(LocalContext.current),
-        viewModel = viewModel(),
-    )
 }

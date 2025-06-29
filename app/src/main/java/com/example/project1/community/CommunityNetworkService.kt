@@ -192,7 +192,7 @@ class CommunityNetworkService {
     /**
      * Create a comment on a post
      */
-    suspend fun createComment(authToken: String, postId: Int, content: String, parentCommentId: Int = 0): Boolean =
+    suspend fun createComment(authToken: String, postId: Int, content: String): Boolean =
         withContext(Dispatchers.IO) {
             var connection: HttpURLConnection? = null
 
@@ -212,7 +212,6 @@ class CommunityNetworkService {
                 val jsonPayload = JSONObject().apply {
                     put("postId", postId)
                     put("content", content)
-                    put("parentCommentId", parentCommentId)
                 }
 
                 Log.d(TAG, "Create comment payload: $jsonPayload")
@@ -286,6 +285,7 @@ class CommunityNetworkService {
         }
     }
 
+
     /**
      * Parse the JSON response into PostDto objects
      */
@@ -317,11 +317,14 @@ class CommunityNetworkService {
                 }
 
                 // Create post object
+                // Create post object
                 val post = PostDto(
                     id = postJson.getInt("id"),
                     content = postJson.getString("content"),
                     createdAt = postJson.getString("createdAt"),
                     userId = postJson.getString("userId"),
+                    userName = postJson.optString("userName","Unknown"), // ⬅️ مضاف
+                    profilePicture = postJson.optString("profilePicture", null), // ⬅️ مضاف
                     image = postJson.optString("image", ""),
                     likeCount = postJson.getInt("likeCount"),
                     comments = comments
@@ -339,6 +342,60 @@ class CommunityNetworkService {
             throw Exception("Failed to parse server response: ${e.message}")
         }
     }
+
+    /////deletePost
+    suspend fun deletePost(authToken: String, postId: Int): Boolean = withContext(Dispatchers.IO) {
+        val url = URL("http://phishaware.runasp.net/api/Community/Post/$postId")
+        val connection = url.openConnection() as HttpURLConnection
+
+        try {
+            connection.requestMethod = "DELETE"
+            connection.setRequestProperty("Authorization", "Bearer $authToken")
+
+            val responseCode = connection.responseCode
+            Log.d("Network", "Delete post response code: $responseCode")
+            return@withContext responseCode == HttpURLConnection.HTTP_OK
+        } catch (e: Exception) {
+            Log.e("Network", "Delete post failed: ${e.message}")
+            return@withContext false
+        } finally {
+            connection.disconnect()
+        }
+    }
+
+    suspend fun editPost(authToken: String, postId: Int, newContent: String, newImage: String = ""): Boolean =
+        withContext(Dispatchers.IO) {
+            val url = URL("http://phishaware.runasp.net/api/Community/Post/$postId")
+            val connection = url.openConnection() as HttpURLConnection
+
+            try {
+                connection.requestMethod = "PUT"
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.setRequestProperty("Authorization", "Bearer $authToken")
+                connection.doOutput = true
+
+                val jsonBody = JSONObject().apply {
+                    put("content", newContent)
+                    put("image", newImage)
+                }
+
+                connection.outputStream.use { os ->
+                    val input = jsonBody.toString().toByteArray(Charsets.UTF_8)
+                    os.write(input)
+                }
+
+                val code = connection.responseCode
+                Log.d("Network", "Edit post response code: $code")
+
+                return@withContext code == HttpURLConnection.HTTP_OK
+            } catch (e: Exception) {
+                Log.e("Network", "Edit post failed: ${e.message}")
+                return@withContext false
+            } finally {
+                connection.disconnect()
+            }
+        }
+
 
     /**
      * Get current user information
@@ -404,7 +461,9 @@ data class PostDto(
     val userId: String,
     val image: String,
     val likeCount: Int,
-    val comments: List<CommentDto>
+    val comments: List<CommentDto>,
+    val userName: String,                 // ⬅️ جديد
+    val profilePicture: String?,
 )
 
 data class CommentDto(
