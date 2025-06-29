@@ -43,6 +43,7 @@ import com.example.project1.R
 import Screen
 import com.example.project1.home.BottomNavigationBar
 import com.example.project1.viewmodel.CommunityViewModel
+import com.example.project1.ui.theme.customColors
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -52,7 +53,6 @@ import java.util.*
 fun Community(
     navController: NavController,
     viewModel: CommunityViewModel = viewModel()
-
 ) {
     val editImagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -62,7 +62,6 @@ fun Community(
             Log.d("Community", "Selected image for editing: $uri")
         }
     }
-// Launcher لاختيار صورة جديدة أثناء تعديل بوست
 
     val onPickEditImage: () -> Unit = {
         editImagePickerLauncher.launch("image/*")
@@ -117,7 +116,7 @@ fun Community(
     ) { bitmap: Bitmap? ->
         bitmap?.let {
             Log.d("Community", "Photo taken from camera")
-            viewModel.setSelectedImage(null) // Clear URI since we have bitmap directly
+            viewModel.setSelectedImage(null)
             viewModel._selectedImageBitmap.value = it
             showImagePickerDialog = false
         }
@@ -137,17 +136,21 @@ fun Community(
                     Log.d("Community", "FAB clicked - refreshing posts")
                     viewModel.refreshPosts()
                 },
-                containerColor = Color(0xFF1976D2)
+                containerColor = MaterialTheme.colorScheme.primary
             ) {
-                Text("↻", color = Color.White, fontSize = 24.sp)
+                Text(
+                    "🔄",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 24.sp
+                )
             }
         },
-        containerColor = Color(0xFF101F31)
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF101F31))
+                .background(MaterialTheme.colorScheme.background)
                 .padding(innerPadding)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -160,39 +163,55 @@ fun Community(
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.arrow),
-                    contentDescription = "Back",
-                    modifier = Modifier
-                        .size(30.dp)
-                        .clickable {
-                            Log.d("Community", "Back button clicked")
-                            navController.popBackStack()
-                        }
-                )
+                IconButton(
+                    onClick = {
+                        Log.d("Community", "Back button clicked")
+                        navController.popBackStack()
+                    },
+                    modifier = Modifier.size(30.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
                 Spacer(modifier = Modifier.weight(0.69f))
                 Text(
                     "PhishAware Community",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = MaterialTheme.typography.headlineSmall
                 )
                 Spacer(modifier = Modifier.weight(1f))
             }
 
             Spacer(modifier = Modifier.height(20.dp))
-            Divider(color = Color.Gray.copy(alpha = 0.5f))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
 
             // Welcome Card
             Spacer(modifier = Modifier.height(16.dp))
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1C2431))
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.customColors.communityCard
+                )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Welcome to PhishAware Community! 👋", color = Color.White)
-                    Text("Share your experience and help others stay protected.", color = Color(0xFF90A4AE), fontSize = 13.sp)
+                    Text(
+                        "Welcome to PhishAware Community! 🛡️",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        "Share your experience and help others stay protected.",
+                        color = MaterialTheme.customColors.secondaryText,
+                        fontSize = 13.sp,
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
             }
 
@@ -201,8 +220,9 @@ fun Community(
             // Tab Row
             TabRow(
                 selectedTabIndex = selectedTab,
-                containerColor = Color(0xFF1C2431),
-                modifier = Modifier.fillMaxWidth()
+                containerColor = MaterialTheme.colorScheme.surface,
+                modifier = Modifier.fillMaxWidth(),
+                contentColor = MaterialTheme.colorScheme.primary
             ) {
                 Tab(
                     selected = selectedTab == 0,
@@ -210,7 +230,15 @@ fun Community(
                         Log.d("Community", "All posts tab selected")
                         viewModel.selectTab(0)
                     },
-                    text = { Text("All Posts", color = Color.White) }
+                    text = {
+                        Text(
+                            "All Posts",
+                            color = if (selectedTab == 0)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 )
                 Tab(
                     selected = selectedTab == 1,
@@ -218,7 +246,15 @@ fun Community(
                         Log.d("Community", "My posts tab selected")
                         viewModel.selectTab(1)
                     },
-                    text = { Text("My Posts", color = Color.White) }
+                    text = {
+                        Text(
+                            "My Posts",
+                            color = if (selectedTab == 1)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 )
             }
 
@@ -235,18 +271,28 @@ fun Community(
                             .fillMaxWidth()
                             .padding(bottom = 16.dp),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1C2B3A))
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.customColors.cardBackground
+                        )
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             OutlinedTextField(
                                 value = newPostContent,
                                 onValueChange = { newPostContent = it },
-                                placeholder = { Text("Write your post...", color = Color.Gray) },
+                                placeholder = {
+                                    Text(
+                                        "Write your post...",
+                                        color = MaterialTheme.customColors.hintText
+                                    )
+                                },
                                 modifier = Modifier.fillMaxWidth(),
-                                textStyle = LocalTextStyle.current.copy(color = Color.White),
-                                colors = TextFieldDefaults.outlinedTextFieldColors(
-                                    focusedBorderColor = Color(0xFF1976D2),
-                                    unfocusedBorderColor = Color.Gray
+                                textStyle = LocalTextStyle.current.copy(
+                                    color = MaterialTheme.colorScheme.onSurface
+                                ),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                    cursorColor = MaterialTheme.colorScheme.primary
                                 )
                             )
 
@@ -274,10 +320,10 @@ fun Community(
                                             Icon(
                                                 Icons.Default.Close,
                                                 contentDescription = "Remove Image",
-                                                tint = Color.White,
+                                                tint = MaterialTheme.colorScheme.onPrimary,
                                                 modifier = Modifier
                                                     .background(
-                                                        Color.Black.copy(alpha = 0.5f),
+                                                        MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f),
                                                         CircleShape
                                                     )
                                                     .padding(4.dp)
@@ -297,7 +343,7 @@ fun Community(
                                 OutlinedButton(
                                     onClick = { showImagePickerDialog = true },
                                     colors = ButtonDefaults.outlinedButtonColors(
-                                        contentColor = Color(0xFF1976D2)
+                                        contentColor = MaterialTheme.colorScheme.primary
                                     )
                                 ) {
                                     Icon(Icons.Default.Add, contentDescription = "Add Image")
@@ -316,16 +362,21 @@ fun Community(
                                             Log.w("Community", "Attempted to create empty post")
                                         }
                                     },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2)),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary
+                                    ),
                                     enabled = !isCreatingPost && newPostContent.isNotBlank()
                                 ) {
                                     if (isCreatingPost) {
                                         CircularProgressIndicator(
                                             modifier = Modifier.size(16.dp),
-                                            color = Color.White
+                                            color = MaterialTheme.colorScheme.onPrimary
                                         )
                                     } else {
-                                        Text("Post", color = Color.White)
+                                        Text(
+                                            "Post",
+                                            color = MaterialTheme.colorScheme.onPrimary
+                                        )
                                     }
                                 }
                             }
@@ -340,7 +391,9 @@ fun Community(
                             modifier = Modifier.fillMaxWidth().padding(16.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator(color = Color(0xFF1976D2))
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                 }
@@ -359,12 +412,10 @@ fun Community(
                             showCommentDialog = true
                         },
                         onPickEditImage = {
-                            editImagePickerLauncher.launch("image/*") // ✅ دا اللي هيفتح الجاليري
+                            editImagePickerLauncher.launch("image/*")
                         }
                     )
-
                 }
-
 
                 // Empty state
                 if (!isLoading && filteredPosts.isEmpty()) {
@@ -375,8 +426,9 @@ fun Community(
                         ) {
                             Text(
                                 text = if (selectedTab == 0) "No posts available" else "You haven't created any posts yet",
-                                color = Color.Gray,
-                                fontSize = 16.sp
+                                color = MaterialTheme.customColors.secondaryText,
+                                fontSize = 16.sp,
+                                style = MaterialTheme.typography.bodyMedium
                             )
                         }
                     }
@@ -389,8 +441,18 @@ fun Community(
     if (showImagePickerDialog) {
         AlertDialog(
             onDismissRequest = { showImagePickerDialog = false },
-            title = { Text("Select Image") },
-            text = { Text("Choose how you want to add an image to your post") },
+            title = {
+                Text(
+                    "Select Image",
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            text = {
+                Text(
+                    "Choose how you want to add an image to your post",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -398,14 +460,16 @@ fun Community(
                         galleryLauncher.launch("image/*")
                     }
                 ) {
-                    Text("Gallery")
+                    Text(
+                        "Gallery",
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = {
                         Log.d("Community", "Camera option selected")
-                        // Check camera permission
                         when (PackageManager.PERMISSION_GRANTED) {
                             ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) -> {
                                 cameraLauncher.launch(null)
@@ -417,9 +481,13 @@ fun Community(
                         showImagePickerDialog = false
                     }
                 ) {
-                    Text("Camera")
+                    Text(
+                        "Camera",
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
-            }
+            },
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
 
@@ -430,13 +498,28 @@ fun Community(
                 showCommentDialog = false
                 commentContent = ""
             },
-            title = { Text("Add Comment") },
+            title = {
+                Text(
+                    "Add Comment",
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
             text = {
                 OutlinedTextField(
                     value = commentContent,
                     onValueChange = { commentContent = it },
-                    placeholder = { Text("Write your comment...") },
-                    modifier = Modifier.fillMaxWidth()
+                    placeholder = {
+                        Text(
+                            "Write your comment...",
+                            color = MaterialTheme.customColors.hintText
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = MaterialTheme.colorScheme.primary
+                    )
                 )
             },
             confirmButton = {
@@ -450,7 +533,10 @@ fun Community(
                         }
                     }
                 ) {
-                    Text("Post Comment")
+                    Text(
+                        "Post Comment",
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             },
             dismissButton = {
@@ -458,13 +544,16 @@ fun Community(
                     showCommentDialog = false
                     commentContent = ""
                 }) {
-                    Text("Cancel")
+                    Text(
+                        "Cancel",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
-            }
+            },
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
 }
-
 
 @Composable
 private fun PostItem(
@@ -473,7 +562,7 @@ private fun PostItem(
     currentUserId: String,
     onLikeClick: () -> Unit,
     onCommentClick: () -> Unit,
-    onPickEditImage: () -> Unit // ⬅️ أضف ده
+    onPickEditImage: () -> Unit
 ) {
     var showComments by remember { mutableStateOf(false) }
 
@@ -482,7 +571,9 @@ private fun PostItem(
             .fillMaxWidth()
             .padding(bottom = 12.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1C2B3A)),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.customColors.cardBackground
+        ),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -509,10 +600,14 @@ private fun PostItem(
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF37474F)),
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.Person, contentDescription = null, tint = Color.White)
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
 
@@ -520,12 +615,14 @@ private fun PostItem(
                     Text(
                         text = if (post.userId == currentUsername) "You" else post.userName,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF90CAF9)
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleSmall
                     )
                     Text(
                         text = formatDate(post.createdAt),
-                        color = Color(0xFFB0BEC5),
-                        fontSize = 12.sp
+                        color = MaterialTheme.customColors.secondaryText,
+                        fontSize = 12.sp,
+                        style = MaterialTheme.typography.bodySmall
                     )
                 }
             }
@@ -533,7 +630,12 @@ private fun PostItem(
             Spacer(modifier = Modifier.height(12.dp))
 
             // Post Content
-            Text(post.content, color = Color.White, fontSize = 15.sp)
+            Text(
+                post.content,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 15.sp,
+                style = MaterialTheme.typography.bodyMedium
+            )
 
             // Post Image (if exists)
             if (post.image.isNotEmpty()) {
@@ -563,15 +665,17 @@ private fun PostItem(
             // Action Buttons
             Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                 Text(
-                    text = "👍 ${post.likeCount}",
-                    color = Color(0xFFBBDEFB),
+                    text = "❤️ ${post.likeCount}",
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 14.sp,
+                    style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.clickable { onLikeClick() }
                 )
                 Text(
                     text = "💬 ${post.comments.size} Comments",
-                    color = Color(0xFFB0BEC5),
+                    color = MaterialTheme.customColors.secondaryText,
                     fontSize = 14.sp,
+                    style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.clickable {
                         showComments = !showComments
                         if (!showComments) onCommentClick()
@@ -586,20 +690,21 @@ private fun PostItem(
                     Column(modifier = Modifier.padding(start = 16.dp, top = 4.dp)) {
                         Text(
                             text = "💭 ${comment.content}",
-                            color = Color.White,
-                            fontSize = 14.sp
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 14.sp,
+                            style = MaterialTheme.typography.bodySmall
                         )
                         Text(
                             text = formatDate(comment.createdAt),
-                            color = Color.Gray,
-                            fontSize = 12.sp
+                            color = MaterialTheme.customColors.hintText,
+                            fontSize = 12.sp,
+                            style = MaterialTheme.typography.labelSmall
                         )
                     }
                 }
             }
 
-
-            // 🔥 Delete button if current user is the owner
+            // Edit/Delete buttons if current user is the owner
             if (post.userId == currentUserId) {
                 val viewModel: CommunityViewModel = viewModel()
                 var showEditDialog by remember { mutableStateOf(false) }
@@ -613,16 +718,22 @@ private fun PostItem(
                 ) {
                     TextButton(onClick = {
                         editedImageBitmap = null
-                        viewModel.clearSelectedImage() // نفضي الصورة الحالية عشان التعديل يبدأ fresh
+                        viewModel.clearSelectedImage()
                         showEditDialog = true
                     }) {
-                        Text("Edit", color = Color.Yellow)
+                        Text(
+                            "Edit",
+                            color = MaterialTheme.customColors.warning
+                        )
                     }
 
                     TextButton(onClick = {
                         viewModel.deletePost(post.id)
                     }) {
-                        Text("Delete", color = Color.Red)
+                        Text(
+                            "Delete",
+                            color = MaterialTheme.customColors.danger
+                        )
                     }
                 }
 
@@ -633,25 +744,44 @@ private fun PostItem(
                             editedContent = post.content
                             editedImageBitmap = null
                         },
-                        title = { Text("Edit Post") },
+                        title = {
+                            Text(
+                                "Edit Post",
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        },
                         text = {
                             Column {
                                 OutlinedTextField(
                                     value = editedContent,
                                     onValueChange = { editedContent = it },
-                                    label = { Text("Post Content") },
-                                    modifier = Modifier.fillMaxWidth()
+                                    label = {
+                                        Text(
+                                            "Post Content",
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                        cursorColor = MaterialTheme.colorScheme.primary
+                                    )
                                 )
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                // زرار تغيير الصورة
-                                Button(onClick = {
-                                    onPickEditImage() // يفتح الجاليري
-                                }) {
-                                    Text("Change Image")
+                                Button(
+                                    onClick = { onPickEditImage() },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.secondary
+                                    )
+                                ) {
+                                    Text(
+                                        "Change Image",
+                                        color = MaterialTheme.colorScheme.onSecondary
+                                    )
                                 }
-
 
                                 // Preview image if exists
                                 val selectedImageBitmap by viewModel.selectedImageBitmap.collectAsState()
@@ -676,7 +806,10 @@ private fun PostItem(
                                 viewModel.editPost(post.id, editedContent, imageToSend)
                                 showEditDialog = false
                             }) {
-                                Text("Save")
+                                Text(
+                                    "Save",
+                                    color = MaterialTheme.customColors.success
+                                )
                             }
                         },
                         dismissButton = {
@@ -685,18 +818,19 @@ private fun PostItem(
                                 editedContent = post.content
                                 editedImageBitmap = null
                             }) {
-                                Text("Cancel")
+                                Text(
+                                    "Cancel",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
-                        }
+                        },
+                        containerColor = MaterialTheme.colorScheme.surface
                     )
                 }
             }
-
         }
-
     }
 }
-
 
 private fun formatDate(dateString: String): String {
     return try {

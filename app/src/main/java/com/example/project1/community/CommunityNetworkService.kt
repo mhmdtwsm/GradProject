@@ -27,7 +27,7 @@ class CommunityNetworkService {
         private const val API_GET_POSTS = "$BASE_URL/PostsWithCommentsAndLikes"
         private const val API_CREATE_POST = "$BASE_URL/Post"
         private const val API_CREATE_COMMENT = "$BASE_URL/Comment"
-        private const val API_LIKE_POST = "$BASE_URL/Like"
+        private const val API_LIKE_POST = "$BASE_URL/React"
         private const val API_USER_POSTS = "$BASE_URL/UserPosts"
         private const val API_DELETE_POST = "$BASE_URL/Post"
         private const val API_UPDATE_POST = "$BASE_URL/Post"
@@ -161,6 +161,7 @@ class CommunityNetworkService {
 
             val jsonPayload = JSONObject().apply {
                 put("postId", postId)
+                put("reactionType", "Like") // Add this line with the correct reaction type
             }
 
             Log.d(TAG, "Like post payload: $jsonPayload")
