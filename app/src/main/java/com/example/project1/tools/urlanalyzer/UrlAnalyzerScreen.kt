@@ -54,12 +54,17 @@ interface VirusTotalApi {
 }
 
 object ApiClient {
-    val retrofit: VirusTotalApi by lazy {
-        Retrofit.Builder()
-            .baseUrl("https://www.virustotal.com/api/v3/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(VirusTotalApi::class.java)
+    private var _retrofit: VirusTotalApi? = null
+
+    fun getRetrofit(): VirusTotalApi {
+        if (_retrofit == null) {
+            _retrofit = Retrofit.Builder()
+                .baseUrl("https://www.virustotal.com/api/v3/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create(VirusTotalApi::class.java)
+        }
+        return _retrofit!!
     }
 }
 
@@ -82,7 +87,7 @@ data class UrlAttributes(
     val popular_threat_classification: PopularThreatClassification? = null,
     val whois: String? = null,
     val content_categories: Map<String, String>? = null,
-    val ip_address: String? = null // ✅ تمت الإضافة
+    val ip_address: String? = null
 )
 
 data class AnalysisResult(val result: String?)
@@ -134,10 +139,10 @@ class UrlAnalyzerViewModel : ViewModel() {
     fun analyzeUrl(inputUrl: String) {
         viewModelScope.launch {
             try {
-                _result.value = "\uD83D\uDCE4 Submitting URL..."
-                val submitResponse = ApiClient.retrofit.submitUrl(url = inputUrl)
+                _result.value = "📤 Submitting URL..."
+                val submitResponse = ApiClient.getRetrofit().submitUrl(url = inputUrl)
                 if (!submitResponse.isSuccessful) {
-                    _result.value = "\u274C Submission failed: ${submitResponse.message()}"
+                    _result.value = "❌ Submission failed: ${submitResponse.message()}"
                     return@launch
                 }
 
@@ -145,12 +150,12 @@ class UrlAnalyzerViewModel : ViewModel() {
                     inputUrl.toByteArray(),
                     Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP
                 )
-                _result.value = "\u231B Waiting for scan result..."
+                _result.value = "⏳ Waiting for scan result..."
                 delay(15000)
 
-                val reportResponse = ApiClient.retrofit.getUrlReport(encodedUrl)
+                val reportResponse = ApiClient.getRetrofit().getUrlReport(encodedUrl)
                 if (!reportResponse.isSuccessful) {
-                    _result.value = "\u274C Error fetching report: ${reportResponse.message()}"
+                    _result.value = "❌ Error fetching report: ${reportResponse.message()}"
                     return@launch
                 }
 
@@ -163,7 +168,7 @@ class UrlAnalyzerViewModel : ViewModel() {
                 } ?: 0
                 val total = results?.size ?: 0
 
-                _result.value = "\uD83D\uDCCA Malicious: $maliciousCount out of $total engines."
+                _result.value = "📊 Malicious: $maliciousCount out of $total engines."
 
                 val resolvedIp = resolveIpFromUrl(inputUrl)
                 val updatedAttributes = attributes?.copy(ip_address = resolvedIp)
@@ -171,7 +176,7 @@ class UrlAnalyzerViewModel : ViewModel() {
                 _extraInfo.value = updatedAttributes
 
             } catch (e: Exception) {
-                _result.value = "\u26A0\uFE0F Error: ${e.message}"
+                _result.value = "⚠️ Error: ${e.message}"
             }
         }
     }
@@ -200,7 +205,7 @@ fun UrlAnalyzerScreen(navController: NavController, viewModel: UrlAnalyzerViewMo
                 )
             )
         },
-        ) { innerPadding ->
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -229,7 +234,7 @@ fun UrlAnalyzerScreen(navController: NavController, viewModel: UrlAnalyzerViewMo
             Spacer(modifier = Modifier.height(16.dp))
 
             if (result.isNotEmpty() || extraInfo != null) {
-                AnalysisResultCard(result = result, extraInfo = extraInfo)
+                DetailedAnalysisResultCard(result = result, extraInfo = extraInfo)
             }
         }
     }
@@ -274,81 +279,231 @@ private fun UrlInputField(url: String, onUrlChange: (String) -> Unit) {
 }
 
 @Composable
-private fun AnalysisResultCard(result: String, extraInfo: UrlAttributes?) {
+private fun DetailedAnalysisResultCard(result: String, extraInfo: UrlAttributes?) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.customColors.cardBackground,
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(result, style = MaterialTheme.typography.titleMedium)
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = result,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
 
             extraInfo?.let { info ->
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
-                ResultSection(title = "IP Address", value = info.ip_address)
-                ResultSection(title = "Reputation", value = info.reputation?.toString())
-                ResultSection(
-                    title = "Analysis Stats",
-                    content = {
-                        Column {
-                            Text("Harmless: ${info.last_analysis_stats?.harmless ?: 0}")
-                            Text("Malicious: ${info.last_analysis_stats?.malicious ?: 0}")
-                            Text("Suspicious: ${info.last_analysis_stats?.suspicious ?: 0}")
-                        }
+                Spacer(modifier = Modifier.height(12.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+
+                info.ip_address?.let {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "📡 IP Address: $it",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                info.categories?.let { cats ->
+                    Text(
+                        "📁 Categories:",
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    cats.forEach { (k, v) ->
+                        Text(
+                            "$k: $v",
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                     }
-                )
-                ResultSection(
-                    title = "Community Votes",
-                    content = {
-                        Column {
-                            Text("Harmless: ${info.total_votes?.harmless ?: 0}")
-                            Text("Malicious: ${info.total_votes?.malicious ?: 0}")
-                        }
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                info.last_http_response?.let { resp ->
+                    Text(
+                        "🌐 HTTP Response:",
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        "Final URL: ${resp.final_url ?: "N/A"}",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        "Status Code: ${resp.status_code ?: "N/A"}",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    resp.headers?.forEach { (k, v) ->
+                        Text(
+                            "$k: $v",
+                            color = MaterialTheme.customColors.secondaryText,
+                            fontSize = 12.sp
+                        )
                     }
-                )
-                ResultSection(title = "Final URL", value = info.last_http_response?.final_url)
-                ResultSection(title = "Status Code", value = info.last_http_response?.status_code?.toString())
+                    Text(
+                        "Body Length: ${resp.body_length ?: "N/A"}",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        "Body SHA-256: ${resp.body_sha256 ?: "N/A"}",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                info.url_info?.let { urlInfo ->
+                    Text(
+                        "📄 URL Info:",
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        "Title: ${urlInfo.title ?: "N/A"}",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        "Description: ${urlInfo.description ?: "N/A"}",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        "Keywords: ${urlInfo.keywords?.joinToString() ?: "N/A"}",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                info.last_analysis_stats?.let { stats ->
+                    Text(
+                        "📊 Analysis Stats:",
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        "Harmless: ${stats.harmless ?: 0}",
+                        color = MaterialTheme.customColors.success
+                    )
+                    Text(
+                        "Malicious: ${stats.malicious ?: 0}",
+                        color = MaterialTheme.customColors.danger
+                    )
+                    Text(
+                        "Suspicious: ${stats.suspicious ?: 0}",
+                        color = MaterialTheme.customColors.warning
+                    )
+                    Text(
+                        "Undetected: ${stats.undetected ?: 0}",
+                        color = MaterialTheme.customColors.secondaryText
+                    )
+                    Text(
+                        "Timeout: ${stats.timeout ?: 0}",
+                        color = MaterialTheme.customColors.secondaryText
+                    )
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                info.reputation?.let {
+                    val reputationColor = when {
+                        it > 0 -> MaterialTheme.customColors.success
+                        it < 0 -> MaterialTheme.customColors.danger
+                        else -> MaterialTheme.customColors.secondaryText
+                    }
+                    Text(
+                        "⭐ Reputation: $it",
+                        color = reputationColor
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                info.total_votes?.let { votes ->
+                    Text(
+                        "👍 Harmless Votes = ${votes.harmless ?: 0}",
+                        color = MaterialTheme.customColors.success
+                    )
+                    Text(
+                        "👎 Malicious Votes = ${votes.malicious ?: 0}",
+                        color = MaterialTheme.customColors.danger
+                    )
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                info.popular_threat_classification?.let { ptc ->
+                    Text(
+                        "🔥 Threat Classification:",
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        "Threat Name: ${ptc.threat_name ?: "N/A"}",
+                        color = MaterialTheme.customColors.danger
+                    )
+                    Text(
+                        "Category: ${ptc.category ?: "N/A"}",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        "Ranking: ${ptc.popularity_ranking ?: "N/A"}",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                info.whois?.let {
+                    Text(
+                        "📇 Whois Info:",
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        it,
+                        color = MaterialTheme.customColors.secondaryText,
+                        fontSize = 12.sp
+                    )
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                info.content_categories?.let { cc ->
+                    Text(
+                        "🗂️ Content Categories:",
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    cc.forEach { (k, v) ->
+                        Text(
+                            "$k: $v",
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
             }
         }
     }
-}
-
-@Composable
-private fun ResultSection(title: String, value: String?) {
-    if (!value.isNullOrBlank()) {
-        Column {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-    }
-}
-
-@Composable
-private fun ResultSection(title: String, content: @Composable () -> Unit) {
-    Column {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary
-        )
-        ProvideTextStyle(value = MaterialTheme.typography.bodyMedium) {
-            content()
-        }
-    }
-    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 }
